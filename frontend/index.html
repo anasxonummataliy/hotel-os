@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel OS — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-content">
+      <h1>🏨 Hotel OS Dashboard</h1>
+      <div class="header-right">
+        <button id="refresh-btn" class="btn btn-ghost">↻ Refresh</button>
+        <span id="status" class="status-badge disconnected">● Disconnected</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Layout ─────────────────────────────────────────────────────────── -->
+  <main class="dashboard">
+
+    <!-- Sidebar nav -->
+    <nav class="sidebar">
+      <button class="nav-btn active" data-section="overview">📊 Overview</button>
+      <button class="nav-btn" data-section="rooms">🛏️ Rooms</button>
+      <button class="nav-btn" data-section="bookings">📋 Bookings</button>
+      <button class="nav-btn" data-section="services">🍽️ Room Service</button>
+      <button class="nav-btn" data-section="maintenance">🔧 Maintenance</button>
+      <button class="nav-btn" data-section="actions">⚡ Actions</button>
+      <button class="nav-btn" data-section="events">📡 Events</button>
+    </nav>
+
+    <!-- Content area -->
+    <div class="content">
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <section id="overview" class="section active">
+        <h2>Overview</h2>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="total-rooms">—</div>
+            <div class="stat-label">Total Rooms</div>
+          </div>
+          <div class="stat-card stat-clean">
+            <div class="stat-value" id="clean-rooms">—</div>
+            <div class="stat-label">Clean</div>
+          </div>
+          <div class="stat-card stat-occupied">
+            <div class="stat-value" id="occupied-rooms">—</div>
+            <div class="stat-label">Occupied</div>
+          </div>
+          <div class="stat-card stat-cleaning">
+            <div class="stat-value" id="cleaning-rooms">—</div>
+            <div class="stat-label">Cleaning</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Room Map</h3>
+          <div id="room-grid" class="room-grid"></div>
+        </div>
+      </section>
+
+      <!-- ── Rooms ─────────────────────────────────────────────────────── -->
+      <section id="rooms" class="section">
+        <h2>Room Management</h2>
+        <div id="rooms-list" class="list-container">
+          <div class="empty-state">Loading…</div>
+        </div>
+      </section>
+
+      <!-- ── Bookings ───────────────────────────────────────────────────── -->
+      <section id="bookings" class="section">
+        <h2>Active Bookings</h2>
+        <div id="bookings-list" class="list-container">
+          <div class="empty-state">Loading…</div>
+        </div>
+      </section>
+
+      <!-- ── Room Service ───────────────────────────────────────────────── -->
+      <section id="services" class="section">
+        <h2>Room Service Orders</h2>
+        <div id="services-list" class="list-container">
+          <div class="empty-state">Loading…</div>
+        </div>
+      </section>
+
+      <!-- ── Maintenance ────────────────────────────────────────────────── -->
+      <section id="maintenance" class="section">
+        <h2>Maintenance Queue</h2>
+        <div id="maintenance-list" class="list-container">
+          <div class="empty-state">Loading…</div>
+        </div>
+      </section>
+
+      <!-- ── Actions ───────────────────────────────────────────────────── -->
+      <section id="actions" class="section">
+        <h2>Quick Actions</h2>
+
+        <div class="actions-grid">
+
+          <!-- Create Guest -->
+          <div class="card">
+            <h3>👤 Register Guest</h3>
+            <form id="form-guest" class="form">
+              <div class="form-row">
+                <label>First name<input name="first_name" required placeholder="John" /></label>
+                <label>Last name<input name="last_name" required placeholder="Doe" /></label>
+              </div>
+              <label>Email<input name="email" type="email" required placeholder="john@example.com" /></label>
+              <label>Phone<input name="phone" placeholder="+1 555 0100" /></label>
+              <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+          </div>
+
+          <!-- Check-in -->
+          <div class="card">
+            <h3>✅ Check-in</h3>
+            <form id="form-checkin" class="form">
+              <label>Guest ID<input name="guest_id" type="number" required placeholder="1" /></label>
+              <label>Room type
+                <select name="room_type" required>
+                  <option value="single">Single</option>
+                  <option value="double">Double</option>
+                  <option value="suite">Suite</option>
+                  <option value="accessible">Accessible</option>
+                </select>
+              </label>
+              <div class="form-row">
+                <label>Check-in<input name="check_in_date" type="date" required /></label>
+                <label>Check-out<input name="check_out_date" type="date" required /></label>
+              </div>
+              <label>Preferred floor<input name="preferred_floor" type="number" placeholder="1 or 2" /></label>
+              <button type="submit" class="btn btn-primary">Check In</button>
+            </form>
+          </div>
+
+          <!-- Check-out -->
+          <div class="card">
+            <h3>🚪 Check-out</h3>
+            <form id="form-checkout" class="form">
+              <label>Booking ID<input name="booking_id" type="number" required placeholder="1" /></label>
+              <label>Room ID<input name="room_id" type="number" required placeholder="3" /></label>
+              <button type="submit" class="btn btn-danger">Check Out</button>
+            </form>
+          </div>
+
+          <!-- Room Service Order -->
+          <div class="card">
+            <h3>🍽️ Place Order</h3>
+            <form id="form-order" class="form">
+              <label>Room ID<input name="room_id" type="number" required placeholder="3" /></label>
+              <label>Item name<input name="item_name" required placeholder="Club Sandwich" /></label>
+              <div class="form-row">
+                <label>Qty<input name="quantity" type="number" min="1" value="1" required /></label>
+                <label>Price ($)<input name="price" type="number" step="0.01" min="0" required placeholder="12.50" /></label>
+              </div>
+              <label>Special requests<input name="special_requests" placeholder="No onions" /></label>
+              <button type="submit" class="btn btn-primary">Place Order</button>
+            </form>
+          </div>
+
+          <!-- Maintenance Report -->
+          <div class="card">
+            <h3>🔧 Report Issue</h3>
+            <form id="form-maintenance" class="form">
+              <label>Room ID<input name="room_id" type="number" required placeholder="5" /></label>
+              <label>Description<input name="description" required placeholder="AC not working" /></label>
+              <label>Priority
+                <select name="priority" required>
+                  <option value="low">Low</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </label>
+              <label>Reported by<input name="reported_by" placeholder="Front desk" /></label>
+              <button type="submit" class="btn btn-warning">Report</button>
+            </form>
+          </div>
+
+        </div><!-- /actions-grid -->
+      </section>
+
+      <!-- ── Events ─────────────────────────────────────────────────────── -->
+      <section id="events" class="section">
+        <h2>Live Event Log</h2>
+        <div class="events-toolbar">
+          <button id="clear-events" class="btn btn-secondary">Clear</button>
+        </div>
+        <div id="event-log" class="event-log">
+          <div class="empty-state">Waiting for events…</div>
+        </div>
+      </section>
+
+    </div><!-- /content -->
+  </main><!-- /dashboard -->
+
+  <footer class="footer">
+    Hotel OS v1.0.0 &nbsp;|&nbsp; Real-Time Management System
+  </footer>
+
+</div><!-- /container -->
+
+<!-- ── Room detail modal ──────────────────────────────────────────────────── -->
+<div id="room-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Room Details</h3>
+      <button class="modal-close" data-close="1">✕</button>
+    </div>
+    <div class="modal-body" id="room-modal-body"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
