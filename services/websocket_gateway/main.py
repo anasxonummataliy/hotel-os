@@ -8,38 +8,81 @@ import os
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.core.broker import make_publisher, make_subscriber
 from app.core.config import settings
+from app.core.broker import make_publisher, make_subscriber
+from app.db.database import db
 from app.schemas.events import (
     EVENT_ROOM_VACATED, EVENT_ROOM_CLEANED, EVENT_ORDER_STATUS_CHANGED,
     EVENT_MAINTENANCE_UPDATED, EVENT_CHECK_IN_COMPLETED, EVENT_CHECK_OUT_COMPLETED,
 )
 
-from .router import router, event_handler, set_event_loop, manager, _frontend_dir
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-publisher = make_publisher()
+publisher  = make_publisher()
 subscriber = make_subscriber()
 
+_event_loop: asyncio.AbstractEventLoop = None
+_frontend_dir = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+
+# ── Connection Manager ────────────────────────────────────────────────────────
+
+class ConnectionManager:
+    def __init__(self):
+        self.active: list[WebSocket] = []
+
+    async def connect(self, ws: WebSocket):
+        await ws.accept()
+        self.active.append(ws)
+        logger.info("Client connected. Total: %d", len(self.active))
+
+    def disconnect(self, ws: WebSocket):
+        self.active = [c for c in self.active if c is not ws]
+        logger.info("Client disconnected. Total: %d", len(self.active))
+
+    async def broadcast(self, data: dict):
+        dead = []
+        for ws in list(self.active):
+            try:
+                await ws.send_json(data)
+            except Exception:
+                dead.append(ws)
+        for ws in dead:
+            self.disconnect(ws)
+
+manager = ConnectionManager()
+
+# ── Event handler (called from Redis subscriber thread) ───────────────────────
+
+def event_handler(event):
+    global _event_loop
+    if _event_loop is None:
+        return
+    msg = {
+        "event_type": event.event_type,
+        "timestamp":  event.timestamp.isoformat(),
+        "service":    event.service,
+        "data":       event.data,
+    }
+    asyncio.run_coroutine_threadsafe(manager.broadcast(msg), _event_loop)
 
 async def subscribe_to_events():
-    for event_type in [
-        EVENT_ROOM_VACATED, EVENT_ROOM_CLEANED, EVENT_ORDER_STATUS_CHANGED,
-        EVENT_MAINTENANCE_UPDATED, EVENT_CHECK_IN_COMPLETED, EVENT_CHECK_OUT_COMPLETED,
-    ]:
-        subscriber.subscribe(event_type, event_handler)
+    for et in [EVENT_ROOM_VACATED, EVENT_ROOM_CLEANED, EVENT_ORDER_STATUS_CHANGED,
+               EVENT_MAINTENANCE_UPDATED, EVENT_CHECK_IN_COMPLETED, EVENT_CHECK_OUT_COMPLETED]:
+        subscriber.subscribe(et, event_handler)
     await subscriber.listen()
 
+# ── App ───────────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    set_event_loop(asyncio.get_running_loop())
+    global _event_loop
+    _event_loop = asyncio.get_running_loop()
     logger.info("WebSocket Gateway starting on port %d…", settings.WEBSOCKET_GATEWAY_PORT)
     task = asyncio.create_task(subscribe_to_events())
     yield
@@ -52,30 +95,55 @@ async def lifespan(app: FastAPI):
     publisher.close()
     logger.info("WebSocket Gateway shut down.")
 
-
 app = FastAPI(title="WebSocket Gateway", version="1.0.0", lifespan=lifespan)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# Serve static frontend files if the folder exists
 if os.path.isdir(_frontend_dir):
     app.mount("/static", StaticFiles(directory=_frontend_dir), name="static")
 
-app.include_router(router)
+# ── Routes ────────────────────────────────────────────────────────────────────
 
+@app.get("/", response_class=HTMLResponse)
+async def dashboard():
+    html_path = os.path.join(_frontend_dir, "index.html")
+    if os.path.exists(html_path):
+        with open(html_path) as f:
+            return HTMLResponse(f.read())
+    return HTMLResponse("<h1>Hotel OS</h1>")
+
+@app.websocket("/ws/dashboard")
+async def ws_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        # Send initial room snapshot
+        rooms_snapshot = {r.id: r.status.value for r in db.get_all_rooms()}
+        await websocket.send_json({
+            "event_type": "dashboard_init",
+            "timestamp": "",
+            "service": "gateway",
+            "data": {"rooms": rooms_snapshot},
+        })
+    except Exception as e:
+        logger.error("Init snapshot error: %s", e)
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        logger.error("WS error: %s", e)
+        manager.disconnect(websocket)
+
+@app.get("/status")
+async def get_status(x_token: str = Header(...)):
+    if x_token != settings.API_TOKEN:
+        raise HTTPException(status_code=403, detail="Invalid token")
+    return {"rooms": [r.to_dict() for r in db.get_all_rooms()], "clients": len(manager.active)}
 
 @app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "service": "websocket_gateway",
-        "clients": len(manager.active_connections),
-    }
-
+async def health():
+    return {"status": "healthy", "service": "websocket_gateway", "clients": len(manager.active)}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=settings.WEBSOCKET_GATEWAY_PORT)

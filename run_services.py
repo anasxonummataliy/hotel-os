@@ -61,6 +61,19 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
+def kill_port(port: int):
+    """Kill any process already listening on the given port."""
+    import subprocess as sp
+    try:
+        result = sp.run(["lsof", "-ti", f":{port}"], capture_output=True, text=True)
+        pids = result.stdout.strip().split()
+        for pid in pids:
+            if pid:
+                sp.run(["kill", "-9", pid], capture_output=True)
+    except Exception:
+        pass
+
+
 def main():
     print("=" * 60)
     print("  Hotel OS — Microservices")
@@ -68,6 +81,13 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
+
+    # Free ports before starting
+    print("\nFreeing ports…", end=" ")
+    for cfg in SERVICES.values():
+        kill_port(cfg["port"])
+    time.sleep(0.5)
+    print("done")
 
     # Check Redis
     print("\nChecking Redis…", end=" ")

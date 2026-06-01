@@ -10,7 +10,7 @@ from app.db.memory_db import db
 from app.schemas.enums import OrderStatus
 from app.schemas.events import EVENT_ORDER_STATUS_CHANGED
 
-from .schemas import OrderCreate, OrderResponse, OrderUpdate
+from services.room_service.schemas import OrderCreate, OrderResponse, OrderUpdate
 
 logger = logging.getLogger(__name__)
 

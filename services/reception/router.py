@@ -11,7 +11,7 @@ from app.db.memory_db import db
 from app.schemas.enums import RoomType, RoomStatus
 from app.schemas.events import EVENT_CHECK_IN_COMPLETED, EVENT_ROOM_VACATED
 
-from .schemas import (
+from services.reception.schemas import (
     CheckInRequest, CheckInResponse,
     CheckOutRequest, CheckOutResponse, BillDetails,
 )

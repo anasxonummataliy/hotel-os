@@ -7,26 +7,47 @@ import asyncio
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.broker import make_subscriber
 from app.core.config import settings
-from app.schemas.events import EVENT_ROOM_VACATED
-
-from .router import router, publisher, handle_room_vacated
+from app.core.broker import make_publisher, make_subscriber
+from app.db.database import db
+from app.schemas.enums import RoomStatus
+from app.schemas.events import EVENT_ROOM_VACATED, EVENT_ROOM_CLEANED
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+publisher = make_publisher()
 subscriber = make_subscriber()
 
+# ── Cleaning Queue ────────────────────────────────────────────────────────────
+
+class CleaningQueue:
+    def __init__(self):
+        self.queue = []
+
+    def add(self, room_id: int, priority: int = 1):
+        if not any(t["room_id"] == room_id for t in self.queue):
+            self.queue.append({"room_id": room_id, "priority": priority, "status": "pending"})
+            self.queue.sort(key=lambda x: x["priority"], reverse=True)
+
+    def remove(self, room_id: int):
+        self.queue = [t for t in self.queue if t["room_id"] != room_id]
+
+cleaning_queue = CleaningQueue()
+
+def handle_room_vacated(event):
+    room_id = event.data.get("room_id")
+    logger.info("room_vacated → queuing room %s for cleaning", room_id)
+    cleaning_queue.add(room_id)
 
 async def event_listener_task():
-    """Background task: subscribe + listen for broker events."""
     subscriber.subscribe(EVENT_ROOM_VACATED, handle_room_vacated)
     await subscriber.listen()
 
+# ── App ───────────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -42,21 +63,51 @@ async def lifespan(app: FastAPI):
     publisher.close()
     logger.info("Housekeeping Service shut down.")
 
-
 app = FastAPI(title="Housekeeping Service", version="1.0.0", lifespan=lifespan)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.include_router(router)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def verify_token(x_token: str = Header(...)):
+    if x_token != settings.API_TOKEN:
+        raise HTTPException(status_code=403, detail="Invalid API token")
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+@app.post("/clean/start")
+async def start_cleaning(room_id: int, x_token: str = Header(...)):
+    verify_token(x_token)
+    room = db.get_room(room_id)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.status != RoomStatus.DIRTY:
+        raise HTTPException(status_code=409, detail=f"Room is '{room.status.value}', expected 'dirty'")
+    db.update_room_status(room_id, RoomStatus.CLEANING)
+    publisher.publish("cleaning_started", "housekeeping", {"room_id": room_id, "room_number": room.number})
+    return {"status": "cleaning_started", "room_id": room_id, "room_number": room.number}
+
+@app.post("/clean/complete")
+async def complete_cleaning(room_id: int, x_token: str = Header(...)):
+    verify_token(x_token)
+    room = db.get_room(room_id)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.status != RoomStatus.CLEANING:
+        raise HTTPException(status_code=409, detail=f"Room is '{room.status.value}', expected 'cleaning'")
+    db.update_room_status(room_id, RoomStatus.CLEAN)
+    db.update_room_last_cleaned(room_id)
+    cleaning_queue.remove(room_id)
+    publisher.publish(EVENT_ROOM_CLEANED, "housekeeping", {"room_id": room_id, "room_number": room.number})
+    return {"status": "cleaning_completed", "room_id": room_id, "room_number": room.number}
+
+@app.get("/queue")
+async def get_queue(x_token: str = Header(...)):
+    verify_token(x_token)
+    return {"queue": cleaning_queue.queue}
 
 @app.get("/health")
-async def health_check():
+async def health():
     return {"status": "healthy", "service": "housekeeping"}
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=settings.HOUSEKEEPING_SERVICE_PORT)

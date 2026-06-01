@@ -10,7 +10,7 @@ from app.db.memory_db import db
 from app.schemas.enums import PriorityLevel
 from app.schemas.events import EVENT_MAINTENANCE_UPDATED
 
-from .schemas import MaintenanceIssueCreate, MaintenanceIssueResponse, MaintenanceIssueUpdate
+from services.maintenance.schemas import MaintenanceIssueCreate, MaintenanceIssueResponse, MaintenanceIssueUpdate
 
 logger = logging.getLogger(__name__)
 
