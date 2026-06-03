@@ -19,6 +19,36 @@ class Base(DeclarativeBase):
     pass
 
 
+# ── User (Auth) ───────────────────────────────────────────────────────────────
+
+class User(Base):
+    __tablename__ = "users"
+
+    id:            Mapped[int]           = mapped_column(Integer, primary_key=True, autoincrement=True)
+    email:         Mapped[str]           = mapped_column(String(255), unique=True, nullable=False, index=True)
+    password_hash: Mapped[str]           = mapped_column(String(512), nullable=False)
+    full_name:     Mapped[str]           = mapped_column(String(200), nullable=False)
+    role:          Mapped[str]           = mapped_column(String(30),  nullable=False, default="guest")
+    # roles: admin | reception | housekeeping | room_service | maintenance | guest
+    is_active:     Mapped[bool]          = mapped_column(Boolean, nullable=False, default=True)
+    guest_id:      Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("guests.id"), nullable=True)
+    created_at:    Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=func.now())
+    updated_at:    Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    guest: Mapped[Optional["Guest"]] = relationship("Guest", back_populates="user", foreign_keys=[guest_id])
+
+    def to_dict(self) -> dict:
+        return {
+            "id":         self.id,
+            "email":      self.email,
+            "full_name":  self.full_name,
+            "role":       self.role,
+            "is_active":  self.is_active,
+            "guest_id":   self.guest_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 # ── Room ──────────────────────────────────────────────────────────────────────
 
 class Room(Base):
@@ -77,6 +107,7 @@ class Guest(Base):
     created_at: Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=func.now())
 
     bookings: Mapped[List["Booking"]] = relationship("Booking", back_populates="guest", foreign_keys="Booking.guest_id")
+    user:     Mapped[Optional["User"]] = relationship("User", back_populates="guest", foreign_keys="User.guest_id")
 
     def to_dict(self) -> dict:
         return {

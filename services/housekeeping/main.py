@@ -7,11 +7,12 @@ import asyncio
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Header
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.broker import make_publisher, make_subscriber
+from app.core.auth import require_roles, staff_or_admin
 from app.db.database import db
 from app.schemas.enums import RoomStatus
 from app.schemas.events import EVENT_ROOM_VACATED, EVENT_ROOM_CLEANED
@@ -66,17 +67,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Housekeeping Service", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-def verify_token(x_token: str = Header(...)):
-    if x_token != settings.API_TOKEN:
-        raise HTTPException(status_code=403, detail="Invalid API token")
-
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.post("/clean/start")
-async def start_cleaning(room_id: int, x_token: str = Header(...)):
-    verify_token(x_token)
+async def start_cleaning(room_id: int, current: dict = Depends(require_roles("admin", "housekeeping"))):
     room = db.get_room(room_id)
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -87,8 +81,7 @@ async def start_cleaning(room_id: int, x_token: str = Header(...)):
     return {"status": "cleaning_started", "room_id": room_id, "room_number": room.number}
 
 @app.post("/clean/complete")
-async def complete_cleaning(room_id: int, x_token: str = Header(...)):
-    verify_token(x_token)
+async def complete_cleaning(room_id: int, current: dict = Depends(require_roles("admin", "housekeeping"))):
     room = db.get_room(room_id)
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -101,8 +94,7 @@ async def complete_cleaning(room_id: int, x_token: str = Header(...)):
     return {"status": "cleaning_completed", "room_id": room_id, "room_number": room.number}
 
 @app.get("/queue")
-async def get_queue(x_token: str = Header(...)):
-    verify_token(x_token)
+async def get_queue(current: dict = Depends(require_roles("admin", "housekeeping"))):
     return {"queue": cleaning_queue.queue}
 
 @app.get("/health")

@@ -1,22 +1,23 @@
 """
 Reception Service — Port 8001
-Handles guest check-in, check-out, and room inventory queries.
+Handles guest check-in, check-out, room inventory and guest management.
+Auth: JWT Bearer token (roles: admin, reception)
 """
 import logging
 import threading
 from datetime import datetime, date
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Optional, List
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Header
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from app.core.config import settings
+from app.core.auth import get_current_user, require_roles, any_authenticated, staff_or_admin
 from app.core.broker import make_publisher
-from app.db.database import db
-from app.db.database import seed_rooms
+from app.db.database import db, seed_rooms
 from app.schemas.enums import RoomType, RoomStatus
 from app.schemas.events import EVENT_CHECK_IN_COMPLETED, EVENT_ROOM_VACATED
 
@@ -63,11 +64,13 @@ class CheckOutResponse(BaseModel):
     bill: BillDetails
     status: str
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+class GuestCreate(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone: Optional[str] = None
 
-def verify_token(x_token: str = Header(...)):
-    if x_token != settings.API_TOKEN:
-        raise HTTPException(status_code=403, detail="Invalid API token")
+# ── Business logic ────────────────────────────────────────────────────────────
 
 def allocate_room(room_type: RoomType, preferred_floor: Optional[int] = None) -> dict:
     with _allocation_lock:
@@ -117,27 +120,50 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Reception Service", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# ── Guest endpoints ───────────────────────────────────────────────────────────
 
 @app.post("/guests", status_code=201)
-async def create_guest(data: dict, x_token: str = Header(...)):
-    verify_token(x_token)
-    for field in ("first_name", "last_name", "email"):
-        if field not in data:
-            raise HTTPException(status_code=400, detail=f"Missing field: {field}")
-    return db.create_guest(data)
+async def create_guest(
+    data: GuestCreate,
+    current: dict = Depends(require_roles("admin", "reception")),
+):
+    return db.create_guest(data.model_dump())
+
+@app.get("/guests")
+async def list_guests(current: dict = Depends(require_roles("admin", "reception"))):
+    return db.get_all_guests()
 
 @app.get("/guests/{guest_id}")
-async def get_guest(guest_id: int, x_token: str = Header(...)):
-    verify_token(x_token)
+async def get_guest(guest_id: int, current: dict = Depends(staff_or_admin)):
+    # guests can only see their own record
+    if current["role"] == "guest" and current.get("guest_id") != guest_id:
+        raise HTTPException(status_code=403, detail="Access denied")
     guest = db.get_guest(guest_id)
     if not guest:
         raise HTTPException(status_code=404, detail="Guest not found")
     return guest
 
+# ── Booking endpoints ─────────────────────────────────────────────────────────
+
+@app.get("/bookings")
+async def list_bookings(current: dict = Depends(require_roles("admin", "reception"))):
+    return db.get_all_bookings()
+
+@app.get("/bookings/my")
+async def my_bookings(current: dict = Depends(get_current_user)):
+    """Guest sees their own bookings."""
+    guest_id = current.get("guest_id")
+    if not guest_id:
+        raise HTTPException(status_code=404, detail="No guest profile linked to this account")
+    return db.get_bookings_by_guest(guest_id)
+
+# ── Check-in / Check-out ──────────────────────────────────────────────────────
+
 @app.post("/check-in", response_model=CheckInResponse)
-async def check_in(request: CheckInRequest, x_token: str = Header(...)):
-    verify_token(x_token)
+async def check_in(
+    request: CheckInRequest,
+    current: dict = Depends(require_roles("admin", "reception")),
+):
     if not db.get_guest(request.guest_id):
         raise HTTPException(status_code=404, detail="Guest not found")
     try:
@@ -168,8 +194,10 @@ async def check_in(request: CheckInRequest, x_token: str = Header(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/check-out", response_model=CheckOutResponse)
-async def check_out(request: CheckOutRequest, x_token: str = Header(...)):
-    verify_token(x_token)
+async def check_out(
+    request: CheckOutRequest,
+    current: dict = Depends(require_roles("admin", "reception")),
+):
     booking = db.get_booking(request.booking_id)
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
@@ -191,14 +219,14 @@ async def check_out(request: CheckOutRequest, x_token: str = Header(...)):
     })
     return CheckOutResponse(booking_id=request.booking_id, room_id=request.room_id, bill=bill, status="checked_out")
 
+# ── Room endpoints ────────────────────────────────────────────────────────────
+
 @app.get("/rooms")
-async def get_rooms(x_token: str = Header(...)):
-    verify_token(x_token)
+async def get_rooms(current: dict = Depends(any_authenticated)):
     return [r.to_dict() for r in db.get_all_rooms()]
 
 @app.get("/rooms/{room_id}")
-async def get_room(room_id: int, x_token: str = Header(...)):
-    verify_token(x_token)
+async def get_room(room_id: int, current: dict = Depends(any_authenticated)):
     room = db.get_room(room_id)
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")

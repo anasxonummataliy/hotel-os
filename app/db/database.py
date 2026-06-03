@@ -208,7 +208,14 @@ class Database:
 
     def get_all_bookings(self) -> List[dict]:
         with get_session() as s:
-            rows = s.execute(select(Booking).order_by(Booking.id)).scalars().all()
+            rows = s.execute(select(Booking).order_by(Booking.id.desc())).scalars().all()
+            return [r.to_dict() for r in rows]
+
+    def get_bookings_by_guest(self, guest_id: int) -> List[dict]:
+        with get_session() as s:
+            rows = s.execute(
+                select(Booking).where(Booking.guest_id == guest_id).order_by(Booking.id.desc())
+            ).scalars().all()
             return [r.to_dict() for r in rows]
 
     def update_booking(self, booking_id: int, data: dict) -> bool:

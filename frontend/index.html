@@ -3,259 +3,606 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hotel OS — Property Management</title>
-  <link rel="stylesheet" href="style.css"/>
+  <title>HotelOS — Property Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        brand: { 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5' }
+      }}}
+    }
+  </script>
+  <style>
+    *{box-sizing:border-box}
+    body{background:#0a0f1e;color:#f1f5f9;font-family:'Inter',system-ui,sans-serif;margin:0}
+
+    /* ── Auth page ── */
+    .auth-bg{
+      min-height:100vh;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,.28) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(139,92,246,.15) 0%, transparent 55%),
+        #0a0f1e;
+    }
+    .auth-card{
+      background:rgba(255,255,255,.04);
+      backdrop-filter:blur(24px);
+      -webkit-backdrop-filter:blur(24px);
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:20px;
+      box-shadow:0 32px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
+    }
+    .auth-tab-btn{
+      flex:1;padding:13px;font-size:.85rem;font-weight:600;cursor:pointer;
+      background:none;border:none;color:#64748b;position:relative;transition:color .2s;
+    }
+    .auth-tab-btn.active{color:#a5b4fc}
+    .auth-tab-btn.active::after{
+      content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;
+      background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:2px;
+    }
+    .auth-input-wrap{position:relative}
+    .auth-input-wrap input{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.1);
+      color:#f1f5f9;border-radius:10px;
+      padding:12px 44px 12px 14px;
+      width:100%;outline:none;font-size:.9rem;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    .auth-input-wrap input:focus{
+      border-color:rgba(99,102,241,.7);
+      box-shadow:0 0 0 3px rgba(99,102,241,.15);
+      background:rgba(99,102,241,.06);
+    }
+    .auth-input-wrap input::placeholder{color:#475569}
+    .auth-input-icon{
+      position:absolute;left:13px;top:50%;transform:translateY(-50%);
+      color:#475569;font-size:.95rem;pointer-events:none;
+    }
+    .auth-input-wrap input{padding-left:40px}
+    .auth-eye{
+      position:absolute;right:13px;top:50%;transform:translateY(-50%);
+      color:#475569;cursor:pointer;font-size:.85rem;user-select:none;
+      background:none;border:none;padding:0;
+    }
+    .auth-eye:hover{color:#94a3b8}
+    .auth-btn{
+      width:100%;padding:13px;border:none;border-radius:11px;font-size:.9rem;font-weight:700;
+      cursor:pointer;letter-spacing:.02em;transition:all .2s;position:relative;overflow:hidden;
+    }
+    .auth-btn-primary{
+      background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);
+      color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.4);
+    }
+    .auth-btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(99,102,241,.5)}
+    .auth-btn-primary:active{transform:translateY(0)}
+    .auth-divider{display:flex;align-items:center;gap:12px;margin:4px 0}
+    .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
+    .credential-pill{
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+      border-radius:8px;padding:8px 12px;font-size:.75rem;
+    }
+    @keyframes authIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+    .auth-card{animation:authIn .35s ease}
+    @keyframes floatDot{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .float-1{animation:floatDot 3s ease-in-out infinite}
+    .float-2{animation:floatDot 4s ease-in-out .5s infinite}
+    .float-3{animation:floatDot 3.5s ease-in-out 1s infinite}
+    input,select,textarea{background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;width:100%;outline:none;font-size:.9rem;transition:border-color .15s}
+    input:focus,select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.2)}
+    select option{background:#1e293b}
+    label{display:block;font-size:.75rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+    .page{display:none}.page.active{display:flex}
+    .section{display:none}.section.active{display:block}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:8px;color:#94a3b8;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+    .nav-link:hover{background:rgba(255,255,255,.05);color:#f1f5f9}
+    .nav-link.active{background:rgba(99,102,241,.15);color:#818cf8;border-left-color:#6366f1}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100}
+    .modal-bg.open{display:flex}
+    .modal{background:#1e293b;border:1px solid #334155;border-radius:16px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:fadeUp .2s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    .badge-clean{background:rgba(34,197,94,.15);color:#22c55e}
+    .badge-occupied{background:rgba(239,68,68,.15);color:#ef4444}
+    .badge-cleaning{background:rgba(245,158,11,.15);color:#f59e0b}
+    .badge-dirty{background:rgba(148,163,184,.12);color:#94a3b8}
+    .badge-maintenance{background:rgba(168,85,247,.15);color:#a855f7}
+    .badge-received{background:rgba(6,182,212,.15);color:#06b6d4}
+    .badge-preparing{background:rgba(245,158,11,.15);color:#f59e0b}
+    .badge-in_delivery,.badge-in-delivery{background:rgba(99,102,241,.15);color:#818cf8}
+    .badge-delivered,.badge-checked_in{background:rgba(34,197,94,.15);color:#22c55e}
+    .badge-cancelled,.badge-checked_out{background:rgba(148,163,184,.12);color:#94a3b8}
+    .badge-reported{background:rgba(6,182,212,.15);color:#06b6d4}
+    .badge-resolved{background:rgba(34,197,94,.15);color:#22c55e}
+    .badge-critical{background:rgba(239,68,68,.2);color:#f87171}
+    .badge-high{background:rgba(245,158,11,.2);color:#fbbf24}
+    .badge-normal{background:rgba(6,182,212,.15);color:#06b6d4}
+    .badge-low{background:rgba(34,197,94,.15);color:#22c55e}
+    .room-tile{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-weight:700;transition:transform .15s,box-shadow .15s;border:2px solid transparent;font-size:.8rem}
+    .room-tile:hover{transform:scale(1.07);box-shadow:0 6px 20px rgba(0,0,0,.5)}
+    .tile-clean{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#22c55e}
+    .tile-occupied{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#ef4444}
+    .tile-cleaning{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#f59e0b}
+    .tile-dirty{background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.3);color:#94a3b8}
+    .tile-maintenance{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.4);color:#a855f7}
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:12px 18px;border-radius:10px;font-size:.875rem;font-weight:500;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.4);opacity:0;transform:translateX(20px);transition:opacity .25s,transform .25s;z-index:9999;max-width:340px}
+    .toast.show{opacity:1;transform:none}
+    .toast-success{background:#16a34a}
+    .toast-error{background:#dc2626}
+    .toast-info{background:#6366f1}
+    .kpi-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;border-top:3px solid}
+    table{width:100%;border-collapse:collapse}
+    th{padding:10px 14px;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;background:#1e293b;border-bottom:1px solid #334155}
+    td{padding:10px 14px;border-bottom:1px solid #1e293b;font-size:.875rem;vertical-align:middle}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .card{background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden}
+    .card-head{padding:14px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:filter .15s}
+    .btn:hover{filter:brightness(1.1)}
+    .btn-primary{background:#6366f1;color:#fff}
+    .btn-success{background:#16a34a;color:#fff}
+    .btn-danger{background:#dc2626;color:#fff}
+    .btn-warning{background:#d97706;color:#fff}
+    .btn-ghost{background:rgba(255,255,255,.07);color:#94a3b8;border:1px solid #334155}
+    .btn-sm{padding:5px 10px;font-size:.78rem}
+    .ws-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+    .ws-connected{background:#22c55e;box-shadow:0 0 6px #22c55e}
+    .ws-disconnected{background:#ef4444}
+    .ws-connecting{background:#f59e0b;animation:pulse 1.2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}
+  </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════ SIDEBAR -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <span class="brand-icon">🏨</span>
-    <span class="brand-name">Hotel OS</span>
+<!-- ═══════════════════════ AUTH PAGE ═══════════════════════ -->
+<div id="page-auth" class="page active auth-bg items-center justify-center p-4" style="min-height:100vh;position:relative;overflow:hidden">
+
+  <!-- Decorative floating orbs -->
+  <div class="float-1" style="position:absolute;top:12%;left:8%;width:320px;height:320px;background:radial-gradient(circle,rgba(99,102,241,.12),transparent 70%);border-radius:50%;pointer-events:none"></div>
+  <div class="float-2" style="position:absolute;bottom:15%;right:6%;width:260px;height:260px;background:radial-gradient(circle,rgba(139,92,246,.1),transparent 70%);border-radius:50%;pointer-events:none"></div>
+  <div class="float-3" style="position:absolute;top:55%;left:3%;width:180px;height:180px;background:radial-gradient(circle,rgba(6,182,212,.07),transparent 70%);border-radius:50%;pointer-events:none"></div>
+
+  <div style="width:100%;max-width:420px;position:relative;z-index:1">
+
+    <!-- Logo / Brand -->
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.2));border:1px solid rgba(99,102,241,.3);border-radius:20px;font-size:2rem;margin-bottom:16px">🏨</div>
+      <h1 style="font-size:1.9rem;font-weight:800;margin:0;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">HotelOS</h1>
+      <p style="color:#475569;font-size:.85rem;margin:6px 0 0;letter-spacing:.02em">Property Management System</p>
+    </div>
+
+    <!-- Card -->
+    <div class="auth-card">
+
+      <!-- Tabs -->
+      <div style="display:flex;border-bottom:1px solid rgba(255,255,255,.07)">
+        <button id="tab-login" class="auth-tab-btn active" onclick="authTab('login')">Sign In</button>
+        <button id="tab-register" class="auth-tab-btn" onclick="authTab('register')">Guest Register</button>
+      </div>
+
+      <div style="padding:28px">
+
+        <!-- ── LOGIN FORM ── -->
+        <form id="form-login" onsubmit="doLogin(event)" style="display:flex;flex-direction:column;gap:16px">
+
+          <div>
+            <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Email address</label>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">✉️</span>
+              <input type="email" name="email" placeholder="you@hotel.com" required autocomplete="email"/>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+              <label style="font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Password</label>
+            </div>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">🔒</span>
+              <input type="password" id="login-pw" name="password" placeholder="Enter your password" required autocomplete="current-password"/>
+              <button type="button" class="auth-eye" onclick="togglePw('login-pw','eye-login')"><span id="eye-login">👁</span></button>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-btn auth-btn-primary" style="margin-top:4px">
+            <span id="login-btn-text">Sign In →</span>
+          </button>
+
+          <p id="login-err" style="color:#f87171;font-size:.82rem;text-align:center;display:none;margin:0"></p>
+
+          <div class="auth-divider"><span style="font-size:.72rem;color:#334155">Demo accounts</span></div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="credential-pill" style="cursor:pointer" onclick="fillLogin('admin@hotel.com','admin123')">
+              <div style="color:#818cf8;font-weight:600;margin-bottom:2px">⚙️ Admin</div>
+              <div style="color:#64748b">admin@hotel.com</div>
+              <div style="color:#475569">admin123</div>
+            </div>
+            <div class="credential-pill" style="cursor:pointer" onclick="fillLogin('reception@hotel.com','staff123')">
+              <div style="color:#34d399;font-weight:600;margin-bottom:2px">🛎️ Reception</div>
+              <div style="color:#64748b">reception@hotel.com</div>
+              <div style="color:#475569">staff123</div>
+            </div>
+          </div>
+
+        </form>
+
+        <!-- ── REGISTER FORM ── -->
+        <form id="form-register" onsubmit="doRegister(event)" style="display:none;flex-direction:column;gap:16px">
+
+          <div style="text-align:center;padding:4px 0 8px">
+            <p style="color:#94a3b8;font-size:.85rem;margin:0">Create your guest account to manage bookings and order room service.</p>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">First Name</label>
+              <div class="auth-input-wrap">
+                <span class="auth-input-icon">👤</span>
+                <input type="text" name="first_name" placeholder="John" required/>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Last Name</label>
+              <div class="auth-input-wrap">
+                <span class="auth-input-icon">👤</span>
+                <input type="text" name="last_name" placeholder="Doe" required/>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Email address</label>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">✉️</span>
+              <input type="email" name="email" placeholder="you@example.com" required autocomplete="email"/>
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Password</label>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">🔒</span>
+              <input type="password" id="reg-pw" name="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password"/>
+              <button type="button" class="auth-eye" onclick="togglePw('reg-pw','eye-reg')"><span id="eye-reg">👁</span></button>
+            </div>
+          </div>
+
+          <!-- Password strength bar -->
+          <div id="pw-strength-wrap" style="display:none">
+            <div style="height:4px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden">
+              <div id="pw-strength-bar" style="height:100%;width:0;transition:width .3s,background .3s;border-radius:4px"></div>
+            </div>
+            <div id="pw-strength-label" style="font-size:.7rem;color:#64748b;margin-top:4px"></div>
+          </div>
+
+          <button type="submit" class="auth-btn auth-btn-primary">
+            Create Guest Account →
+          </button>
+
+          <p id="reg-err" style="color:#f87171;font-size:.82rem;text-align:center;display:none;margin:0"></p>
+
+          <p style="text-align:center;font-size:.78rem;color:#475569;margin:0">
+            Already have an account?
+            <span style="color:#818cf8;cursor:pointer;font-weight:600" onclick="authTab('login')">Sign in</span>
+          </p>
+
+        </form>
+
+      </div>
+    </div>
+
+    <p style="text-align:center;color:#334155;font-size:.73rem;margin-top:24px">
+      © 2024 HotelOS · Secure Property Management
+    </p>
   </div>
-  <nav class="sidebar-nav">
-    <a class="nav-item active" data-page="dashboard" href="#">
-      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-      Dashboard
-    </a>
-    <a class="nav-item" data-page="rooms" href="#">
-      <svg viewBox="0 0 24 24"><path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/></svg>
-      Rooms
-    </a>
-    <a class="nav-item" data-page="guests" href="#">
-      <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-      Guests
-    </a>
-    <a class="nav-item" data-page="bookings" href="#">
-      <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
-      Bookings
-    </a>
-    <a class="nav-item" data-page="orders" href="#">
-      <svg viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-8-15.03-8-15.03 0h15.03zM1.02 17h15v2h-15z"/></svg>
-      Room Service
-    </a>
-    <a class="nav-item" data-page="housekeeping" href="#">
-      <svg viewBox="0 0 24 24"><path d="M20 10V8h-4V4h-2v4h-4V4H8v4H4v2h1.06L6 20h12l.94-10H20zm-7 8h-2v-6h2v6zm4 0h-2v-6h2v6z"/></svg>
-      Housekeeping
-    </a>
-    <a class="nav-item" data-page="maintenance" href="#">
-      <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
-      Maintenance
-    </a>
-    <a class="nav-item" data-page="events" href="#">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-      Live Events
-    </a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="ws-status" id="ws-status">
-      <span class="ws-dot" id="ws-dot"></span>
-      <span id="ws-label">Connecting…</span>
-    </div>
-  </div>
-</aside>
+</div>  </div>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════════ MAIN -->
-<div class="main">
-
-  <!-- Top bar -->
-  <header class="topbar">
-    <button class="menu-toggle" id="menu-toggle">☰</button>
-    <div class="topbar-title" id="page-title">Dashboard</div>
-    <div class="topbar-right">
-      <span class="topbar-date" id="topbar-date"></span>
-      <button class="btn btn-sm btn-outline" id="refresh-btn">↻ Refresh</button>
-    </div>
-  </header>
-
-  <!-- ─── DASHBOARD PAGE ─────────────────────────────────────────── -->
-  <section class="page active" id="page-dashboard">
-    <div class="kpi-row">
-      <div class="kpi-card kpi-total">
-        <div class="kpi-icon">🏨</div>
-        <div class="kpi-body">
-          <div class="kpi-value" id="kpi-total">10</div>
-          <div class="kpi-label">Total Rooms</div>
-        </div>
-      </div>
-      <div class="kpi-card kpi-clean">
-        <div class="kpi-icon">✅</div>
-        <div class="kpi-body">
-          <div class="kpi-value" id="kpi-clean">—</div>
-          <div class="kpi-label">Available</div>
-        </div>
-      </div>
-      <div class="kpi-card kpi-occupied">
-        <div class="kpi-icon">🔴</div>
-        <div class="kpi-body">
-          <div class="kpi-value" id="kpi-occupied">—</div>
-          <div class="kpi-label">Occupied</div>
-        </div>
-      </div>
-      <div class="kpi-card kpi-cleaning">
-        <div class="kpi-icon">🧹</div>
-        <div class="kpi-body">
-          <div class="kpi-value" id="kpi-cleaning">—</div>
-          <div class="kpi-label">Cleaning</div>
-        </div>
-      </div>
-      <div class="kpi-card kpi-dirty">
-        <div class="kpi-icon">⚠️</div>
-        <div class="kpi-body">
-          <div class="kpi-value" id="kpi-dirty">—</div>
-          <div class="kpi-label">Needs Cleaning</div>
-        </div>
+<!-- ═══════════════════════ STAFF DASHBOARD ═══════════════════════ -->
+<div id="page-staff" class="page" style="min-height:100vh">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="w-56 bg-[#1e293b] border-r border-[#334155] flex flex-col h-screen fixed left-0 top-0 z-30 transition-transform">
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-[#334155]">
+      <span class="text-2xl">🏨</span>
+      <div>
+        <div class="font-bold text-sm text-white">HotelOS</div>
+        <div class="text-xs text-slate-400" id="staff-role-label">Staff</div>
       </div>
     </div>
+    <nav class="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto" id="sidebar-nav"></nav>
+    <div class="px-4 py-3 border-t border-[#334155]">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="ws-dot ws-connecting" id="ws-dot"></span>
+        <span class="text-xs text-slate-400" id="ws-label">Connecting…</span>
+      </div>
+      <div class="text-xs text-slate-400 truncate mb-2" id="staff-email"></div>
+      <button onclick="logout()" class="btn btn-ghost btn-sm w-full justify-center">Sign Out</button>
+    </div>
+  </aside>
 
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-header">
-          <h3>Room Map</h3>
-          <div class="legend">
-            <span class="leg clean">Clean</span>
-            <span class="leg occupied">Occupied</span>
-            <span class="leg cleaning">Cleaning</span>
-            <span class="leg dirty">Dirty</span>
-            <span class="leg maintenance">Maintenance</span>
+  <!-- Main -->
+  <div class="ml-56 flex flex-col min-h-screen w-full">
+    <!-- Topbar -->
+    <header class="h-14 bg-[#1e293b] border-b border-[#334155] flex items-center px-6 gap-4 sticky top-0 z-20">
+      <div class="font-bold text-sm flex-1" id="page-title">Dashboard</div>
+      <span class="text-xs text-slate-500" id="topbar-date"></span>
+      <button onclick="refreshData()" class="btn btn-ghost btn-sm">↻ Refresh</button>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-1 p-6 overflow-y-auto">
+
+      <!-- OVERVIEW -->
+      <div id="sec-overview" class="section active">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div class="kpi-card" style="border-top-color:#6366f1">
+            <div class="text-2xl">🏨</div>
+            <div><div class="text-2xl font-black" id="kpi-total">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Total</div></div>
+          </div>
+          <div class="kpi-card" style="border-top-color:#22c55e">
+            <div class="text-2xl">✅</div>
+            <div><div class="text-2xl font-black text-green-400" id="kpi-clean">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Clean</div></div>
+          </div>
+          <div class="kpi-card" style="border-top-color:#ef4444">
+            <div class="text-2xl">🔴</div>
+            <div><div class="text-2xl font-black text-red-400" id="kpi-occupied">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Occupied</div></div>
+          </div>
+          <div class="kpi-card" style="border-top-color:#f59e0b">
+            <div class="text-2xl">🧹</div>
+            <div><div class="text-2xl font-black text-yellow-400" id="kpi-cleaning">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Cleaning</div></div>
+          </div>
+          <div class="kpi-card" style="border-top-color:#94a3b8">
+            <div class="text-2xl">⚠️</div>
+            <div><div class="text-2xl font-black text-slate-400" id="kpi-dirty">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Dirty</div></div>
           </div>
         </div>
-        <div class="room-map" id="room-map"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>Recent Events</h3></div>
-        <div class="mini-events" id="mini-events">
-          <div class="empty">No events yet…</div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="card">
+            <div class="card-head"><h3 class="font-bold text-sm">Room Map</h3>
+              <div class="flex gap-2 text-xs">
+                <span class="text-green-400">● Clean</span><span class="text-red-400">● Occupied</span>
+                <span class="text-yellow-400">● Cleaning</span><span class="text-slate-400">● Dirty</span>
+              </div>
+            </div>
+            <div class="p-4 grid grid-cols-5 gap-2" id="room-map"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3 class="font-bold text-sm">Live Events</h3></div>
+            <div class="max-h-64 overflow-y-auto" id="mini-events">
+              <div class="p-4 text-slate-500 text-sm text-center">No events yet…</div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ─── ROOMS PAGE ─────────────────────────────────────────────── -->
-  <section class="page" id="page-rooms">
-    <div class="page-toolbar">
-      <h2>Room Management</h2>
-    </div>
-    <div class="rooms-grid" id="rooms-grid"></div>
-  </section>
+      <!-- ROOMS -->
+      <div id="sec-rooms" class="section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-lg">Rooms</h2>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Room</th><th>Floor</th><th>Type</th><th>Status</th><th>Price/Night</th><th>Guest</th><th>Last Cleaned</th></tr></thead>
+            <tbody id="rooms-tbody"><tr><td colspan="7" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
 
-  <!-- ─── GUESTS PAGE ────────────────────────────────────────────── -->
-  <section class="page" id="page-guests">
-    <div class="page-toolbar">
-      <h2>Guest Management</h2>
-      <button class="btn btn-primary" id="btn-new-guest">+ New Guest</button>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table" id="guests-table">
-        <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Registered</th></tr></thead>
-        <tbody id="guests-tbody"><tr><td colspan="5" class="empty-row">No guests yet</td></tr></tbody>
-      </table>
-    </div>
-  </section>
+      <!-- GUESTS -->
+      <div id="sec-guests" class="section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-lg">Guests</h2>
+          <button onclick="openModal('modal-guest')" class="btn btn-primary btn-sm">+ Add Guest</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Registered</th></tr></thead>
+            <tbody id="guests-tbody"><tr><td colspan="5" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
 
-  <!-- ─── BOOKINGS PAGE ──────────────────────────────────────────── -->
-  <section class="page" id="page-bookings">
-    <div class="page-toolbar">
-      <h2>Bookings</h2>
-      <div class="toolbar-actions">
-        <button class="btn btn-primary" id="btn-checkin">Check In</button>
-        <button class="btn btn-danger"  id="btn-checkout">Check Out</button>
+      <!-- BOOKINGS -->
+      <div id="sec-bookings" class="section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-lg">Bookings</h2>
+          <div class="flex gap-2">
+            <button onclick="openModal('modal-checkin')" class="btn btn-primary btn-sm">Check In</button>
+            <button onclick="openModal('modal-checkout')" class="btn btn-danger btn-sm">Check Out</button>
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>ID</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Total</th></tr></thead>
+            <tbody id="bookings-tbody"><tr><td colspan="7" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div id="sec-orders" class="section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-lg">Room Service Orders</h2>
+          <button onclick="openModal('modal-order')" class="btn btn-primary btn-sm">+ New Order</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Order</th><th>Room</th><th>Items</th><th>Total</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
+            <tbody id="orders-tbody"><tr><td colspan="7" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- HOUSEKEEPING -->
+      <div id="sec-housekeeping" class="section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-lg">Housekeeping Queue</h2>
+        </div>
+        <div id="hk-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="card p-6 text-center text-slate-500">No pending cleaning tasks ✨</div>
+        </div>
+      </div>
+
+      <!-- MAINTENANCE -->
+      <div id="sec-maintenance" class="section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-lg">Maintenance Queue</h2>
+          <button onclick="openModal('modal-issue')" class="btn btn-warning btn-sm">+ Report Issue</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>#</th><th>Room</th><th>Description</th><th>Priority</th><th>Status</th><th>Reported By</th><th>Action</th></tr></thead>
+            <tbody id="maint-tbody"><tr><td colspan="7" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- EVENTS LOG -->
+      <div id="sec-events" class="section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-lg">Live Event Stream</h2>
+          <button onclick="clearEvents()" class="btn btn-ghost btn-sm">Clear</button>
+        </div>
+        <div class="card">
+          <div id="event-stream" class="font-mono text-xs max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div class="p-4 text-slate-500 text-center">Waiting for events…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div id="sec-admin" class="section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-lg">User Management</h2>
+          <button onclick="openModal('modal-staff')" class="btn btn-primary btn-sm">+ Add Staff</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="users-tbody"><tr><td colspan="6" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════ GUEST PORTAL ═══════════════════════ -->
+<div id="page-guest" class="page" style="min-height:100vh">
+  <aside class="w-56 bg-[#1e293b] border-r border-[#334155] flex flex-col h-screen fixed left-0 top-0 z-30">
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-[#334155]">
+      <span class="text-2xl">🏨</span>
+      <div>
+        <div class="font-bold text-sm text-white">HotelOS</div>
+        <div class="text-xs text-green-400">Guest Portal</div>
       </div>
     </div>
-    <div class="table-wrap">
-      <table class="data-table" id="bookings-table">
-        <thead><tr><th>Booking</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Total</th></tr></thead>
-        <tbody id="bookings-tbody"><tr><td colspan="7" class="empty-row">No bookings</td></tr></tbody>
-      </table>
+    <nav class="flex-1 py-3 px-2 space-y-0.5">
+      <a class="nav-link active" onclick="gNav('g-home')" href="#">🏠 My Stay</a>
+      <a class="nav-link" onclick="gNav('g-order')" href="#">🍽️ Room Service</a>
+      <a class="nav-link" onclick="gNav('g-issue')" href="#">🔧 Report Issue</a>
+    </nav>
+    <div class="px-4 py-3 border-t border-[#334155]">
+      <div class="text-xs text-slate-400 truncate mb-2" id="guest-email"></div>
+      <button onclick="logout()" class="btn btn-ghost btn-sm w-full justify-center">Sign Out</button>
     </div>
-  </section>
+  </aside>
 
-  <!-- ─── ORDERS PAGE ────────────────────────────────────────────── -->
-  <section class="page" id="page-orders">
-    <div class="page-toolbar">
-      <h2>Room Service Orders</h2>
-      <button class="btn btn-primary" id="btn-new-order">+ New Order</button>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>Order</th><th>Room</th><th>Items</th><th>Total</th><th>Status</th><th>Time</th></tr></thead>
-        <tbody id="orders-tbody"><tr><td colspan="6" class="empty-row">No orders</td></tr></tbody>
-      </table>
-    </div>
-  </section>
+  <div class="ml-56 flex flex-col min-h-screen">
+    <header class="h-14 bg-[#1e293b] border-b border-[#334155] flex items-center px-6">
+      <div class="font-bold">Welcome, <span id="guest-name" class="text-brand-400"></span></div>
+    </header>
+    <main class="flex-1 p-6">
 
-  <!-- ─── HOUSEKEEPING PAGE ──────────────────────────────────────── -->
-  <section class="page" id="page-housekeeping">
-    <div class="page-toolbar">
-      <h2>Housekeeping Queue</h2>
-    </div>
-    <div class="hk-grid" id="hk-grid">
-      <div class="empty">All rooms are clean ✨</div>
-    </div>
-  </section>
-
-  <!-- ─── MAINTENANCE PAGE ───────────────────────────────────────── -->
-  <section class="page" id="page-maintenance">
-    <div class="page-toolbar">
-      <h2>Maintenance Queue</h2>
-      <button class="btn btn-warning" id="btn-report-issue">+ Report Issue</button>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>#</th><th>Room</th><th>Description</th><th>Priority</th><th>Status</th><th>Reported by</th></tr></thead>
-        <tbody id="maint-tbody"><tr><td colspan="6" class="empty-row">No issues</td></tr></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ─── EVENTS PAGE ────────────────────────────────────────────── -->
-  <section class="page" id="page-events">
-    <div class="page-toolbar">
-      <h2>Live Event Stream</h2>
-      <button class="btn btn-outline" id="btn-clear-events">Clear</button>
-    </div>
-    <div class="event-stream" id="event-stream">
-      <div class="empty">Waiting for events…</div>
-    </div>
-  </section>
-
-</div><!-- /main -->
-
-<!-- ═══════════════════════════════════════════════════════════ MODALS -->
-
-<!-- New Guest Modal -->
-<div class="modal-overlay" id="modal-guest">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>Register New Guest</h3>
-      <button class="modal-x" data-close="modal-guest">✕</button>
-    </div>
-    <form class="modal-body" id="form-guest">
-      <div class="form-row">
-        <label>First Name *<input name="first_name" required placeholder="John"/></label>
-        <label>Last Name *<input name="last_name" required placeholder="Doe"/></label>
+      <!-- MY STAY -->
+      <div id="g-home" class="section active">
+        <h2 class="font-bold text-lg mb-4">My Bookings</h2>
+        <div id="guest-booking-card" class="card p-6 mb-4 text-slate-400 text-center">Loading…</div>
+        <h2 class="font-bold text-lg mb-4 mt-6">My Orders</h2>
+        <div class="card">
+          <table>
+            <thead><tr><th>Order</th><th>Items</th><th>Total</th><th>Status</th><th>Time</th></tr></thead>
+            <tbody id="guest-orders-tbody"><tr><td colspan="5" class="text-center text-slate-500 py-6">No orders yet</td></tr></tbody>
+          </table>
+        </div>
       </div>
-      <label>Email *<input name="email" type="email" required placeholder="john@example.com"/></label>
-      <label>Phone<input name="phone" placeholder="+1 555 0100"/></label>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-outline" data-close="modal-guest">Cancel</button>
-        <button type="submit" class="btn btn-primary">Register Guest</button>
+
+      <!-- ORDER FOOD -->
+      <div id="g-order" class="section">
+        <h2 class="font-bold text-lg mb-4">Order Room Service</h2>
+        <div class="card max-w-lg">
+          <div class="p-6">
+            <form onsubmit="guestOrder(event)" class="space-y-4">
+              <div><label>Item Name</label><input name="item_name" placeholder="Club Sandwich" required/></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label>Quantity</label><input name="quantity" type="number" min="1" value="1" required/></div>
+                <div><label>Price ($)</label><input name="price" type="number" step="0.01" min="0" placeholder="12.50" required/></div>
+              </div>
+              <div><label>Special Requests</label><input name="special_requests" placeholder="No onions, extra sauce…"/></div>
+              <button type="submit" class="btn btn-primary w-full justify-center">Place Order</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORT ISSUE -->
+      <div id="g-issue" class="section">
+        <h2 class="font-bold text-lg mb-4">Report a Maintenance Issue</h2>
+        <div class="card max-w-lg">
+          <div class="p-6">
+            <form onsubmit="guestReportIssue(event)" class="space-y-4">
+              <div><label>Description</label><input name="description" placeholder="AC not working" required/></div>
+              <div><label>Priority
+                <select name="priority" required>
+                  <option value="low">Low</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </label></div>
+              <button type="submit" class="btn btn-warning w-full justify-center">Submit Report</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MODALS ═══════════════════════ -->
+
+<!-- Add Guest -->
+<div id="modal-guest" class="modal-bg">
+  <div class="modal modal-box">
+    <div class="card-head"><h3 class="font-bold">Register Guest</h3><button onclick="closeModal('modal-guest')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
+    <form onsubmit="addGuest(event)" class="p-5 space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label>First Name</label><input name="first_name" required placeholder="John"/></div>
+        <div><label>Last Name</label><input name="last_name" required placeholder="Doe"/></div>
+      </div>
+      <div><label>Email</label><input type="email" name="email" required placeholder="john@example.com"/></div>
+      <div><label>Phone</label><input name="phone" placeholder="+1 555 0100"/></div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeModal('modal-guest')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-primary">Register</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Check-in Modal -->
-<div class="modal-overlay" id="modal-checkin">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>Guest Check-In</h3>
-      <button class="modal-x" data-close="modal-checkin">✕</button>
-    </div>
-    <form class="modal-body" id="form-checkin">
-      <label>Guest ID *<input name="guest_id" type="number" required placeholder="1" min="1"/></label>
-      <label>Room Type *
+<!-- Check-in -->
+<div id="modal-checkin" class="modal-bg">
+  <div class="modal modal-box">
+    <div class="card-head"><h3 class="font-bold">Guest Check-In</h3><button onclick="closeModal('modal-checkin')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
+    <form onsubmit="doCheckIn(event)" class="p-5 space-y-3">
+      <div><label>Guest ID</label><input type="number" name="guest_id" min="1" required placeholder="1"/></div>
+      <div><label>Room Type
         <select name="room_type" required>
           <option value="">— Select —</option>
           <option value="single">Single ($50/night)</option>
@@ -263,103 +610,114 @@
           <option value="suite">Suite ($120/night)</option>
           <option value="accessible">Accessible ($85/night)</option>
         </select>
-      </label>
-      <div class="form-row">
-        <label>Check-in Date *<input name="check_in_date" type="date" required/></label>
-        <label>Check-out Date *<input name="check_out_date" type="date" required/></label>
+      </label></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label>Check-in Date</label><input type="date" name="check_in_date" required/></div>
+        <div><label>Check-out Date</label><input type="date" name="check_out_date" required/></div>
       </div>
-      <label>Preferred Floor<input name="preferred_floor" type="number" placeholder="1 or 2" min="1" max="2"/></label>
-      <label>Special Requests<input name="special_requests" placeholder="Late check-in, extra pillows…"/></label>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-outline" data-close="modal-checkin">Cancel</button>
-        <button type="submit" class="btn btn-primary">Confirm Check-In</button>
+      <div><label>Preferred Floor</label><input type="number" name="preferred_floor" placeholder="1 or 2" min="1" max="2"/></div>
+      <div><label>Special Requests</label><input name="special_requests" placeholder="Late check-in…"/></div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeModal('modal-checkin')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-success">Confirm Check-In</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Check-out Modal -->
-<div class="modal-overlay" id="modal-checkout">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>Guest Check-Out</h3>
-      <button class="modal-x" data-close="modal-checkout">✕</button>
-    </div>
-    <form class="modal-body" id="form-checkout">
-      <label>Booking ID *<input name="booking_id" type="number" required placeholder="1" min="1"/></label>
-      <label>Room ID *<input name="room_id" type="number" required placeholder="3" min="1"/></label>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-outline" data-close="modal-checkout">Cancel</button>
+<!-- Check-out -->
+<div id="modal-checkout" class="modal-bg">
+  <div class="modal modal-box">
+    <div class="card-head"><h3 class="font-bold">Guest Check-Out</h3><button onclick="closeModal('modal-checkout')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
+    <form onsubmit="doCheckOut(event)" class="p-5 space-y-3">
+      <div><label>Booking ID</label><input type="number" name="booking_id" min="1" required placeholder="1"/></div>
+      <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="3"/></div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeModal('modal-checkout')" class="btn btn-ghost">Cancel</button>
         <button type="submit" class="btn btn-danger">Confirm Check-Out</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- New Order Modal -->
-<div class="modal-overlay" id="modal-order">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>Place Room Service Order</h3>
-      <button class="modal-x" data-close="modal-order">✕</button>
-    </div>
-    <form class="modal-body" id="form-order">
-      <label>Room ID *<input name="room_id" type="number" required placeholder="3" min="1"/></label>
-      <label>Item Name *<input name="item_name" required placeholder="Club Sandwich"/></label>
-      <div class="form-row">
-        <label>Quantity *<input name="quantity" type="number" min="1" value="1" required/></label>
-        <label>Price ($) *<input name="price" type="number" step="0.01" min="0" required placeholder="12.50"/></label>
+<!-- Place Order (staff) -->
+<div id="modal-order" class="modal-bg">
+  <div class="modal modal-box">
+    <div class="card-head"><h3 class="font-bold">Place Room Service Order</h3><button onclick="closeModal('modal-order')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
+    <form onsubmit="placeOrder(event)" class="p-5 space-y-3">
+      <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="3"/></div>
+      <div><label>Item Name</label><input name="item_name" required placeholder="Club Sandwich"/></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label>Quantity</label><input type="number" name="quantity" min="1" value="1" required/></div>
+        <div><label>Price ($)</label><input type="number" name="price" step="0.01" min="0" required placeholder="12.50"/></div>
       </div>
-      <label>Special Requests<input name="special_requests" placeholder="No onions, extra sauce…"/></label>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-outline" data-close="modal-order">Cancel</button>
+      <div><label>Special Requests</label><input name="special_requests" placeholder="No onions…"/></div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeModal('modal-order')" class="btn btn-ghost">Cancel</button>
         <button type="submit" class="btn btn-primary">Place Order</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Report Issue Modal -->
-<div class="modal-overlay" id="modal-issue">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>Report Maintenance Issue</h3>
-      <button class="modal-x" data-close="modal-issue">✕</button>
-    </div>
-    <form class="modal-body" id="form-issue">
-      <label>Room ID *<input name="room_id" type="number" required placeholder="5" min="1"/></label>
-      <label>Description *<input name="description" required placeholder="AC not working"/></label>
-      <label>Priority *
+<!-- Report Issue (staff) -->
+<div id="modal-issue" class="modal-bg">
+  <div class="modal modal-box">
+    <div class="card-head"><h3 class="font-bold">Report Maintenance Issue</h3><button onclick="closeModal('modal-issue')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
+    <form onsubmit="reportIssue(event)" class="p-5 space-y-3">
+      <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="5"/></div>
+      <div><label>Description</label><input name="description" required placeholder="AC not working"/></div>
+      <div><label>Priority
         <select name="priority" required>
           <option value="low">Low</option>
           <option value="normal" selected>Normal</option>
           <option value="high">High</option>
           <option value="critical">Critical</option>
         </select>
-      </label>
-      <label>Reported By<input name="reported_by" placeholder="Front desk staff"/></label>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-outline" data-close="modal-issue">Cancel</button>
-        <button type="submit" class="btn btn-warning">Submit Report</button>
+      </label></div>
+      <div><label>Reported By</label><input name="reported_by" placeholder="Front desk"/></div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeModal('modal-issue')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-warning">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Staff (admin) -->
+<div id="modal-staff" class="modal-bg">
+  <div class="modal modal-box">
+    <div class="card-head"><h3 class="font-bold">Create Staff Account</h3><button onclick="closeModal('modal-staff')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
+    <form onsubmit="addStaff(event)" class="p-5 space-y-3">
+      <div><label>Full Name</label><input name="full_name" required placeholder="Staff Member"/></div>
+      <div><label>Email</label><input type="email" name="email" required placeholder="staff@hotel.com"/></div>
+      <div><label>Password</label><input type="password" name="password" required minlength="6" placeholder="Min 6 chars"/></div>
+      <div><label>Role
+        <select name="role" required>
+          <option value="reception">Reception</option>
+          <option value="housekeeping">Housekeeping</option>
+          <option value="room_service">Room Service</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="admin">Admin</option>
+        </select>
+      </label></div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeModal('modal-staff')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create</button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Room Detail Modal -->
-<div class="modal-overlay" id="modal-room">
-  <div class="modal modal-sm">
-    <div class="modal-head">
-      <h3 id="room-detail-title">Room Details</h3>
-      <button class="modal-x" data-close="modal-room">✕</button>
-    </div>
-    <div class="modal-body" id="room-detail-body"></div>
+<div id="modal-room" class="modal-bg">
+  <div class="modal modal-box">
+    <div class="card-head"><h3 class="font-bold" id="room-modal-title">Room Details</h3><button onclick="closeModal('modal-room')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
+    <div class="p-5" id="room-modal-body"></div>
   </div>
 </div>
 
-<!-- Toast container -->
 <div id="toast-container"></div>
-
 <script src="script.js"></script>
 </body>
 </html>
