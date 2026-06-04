@@ -77,6 +77,7 @@ async def create_order(order: OrderCreate, current: dict = Depends(any_authentic
         "room_id": order.room_id,
         "items": [i.model_dump() for i in order.items],
         "status": OrderStatus.RECEIVED,
+        
         "total_amount": total,
         "special_requests": order.special_requests,
         "updated_at": datetime.utcnow().isoformat(),
