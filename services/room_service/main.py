@@ -41,11 +41,13 @@ class OrderResponse(BaseModel):
     id: int
     room_id: int
     items: List[dict]
-    status: OrderStatus
+    status: str  # keep as string for flexibility; DB stores strings
     total_amount: float
     special_requests: Optional[str] = None
     created_at: str
-    updated_at: str
+    updated_at: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
 
 
 VALID_TRANSITIONS = {
@@ -77,7 +79,6 @@ async def create_order(order: OrderCreate, current: dict = Depends(any_authentic
         "room_id": order.room_id,
         "items": [i.model_dump() for i in order.items],
         "status": OrderStatus.RECEIVED,
-        
         "total_amount": total,
         "special_requests": order.special_requests,
         "updated_at": datetime.utcnow().isoformat(),
@@ -119,7 +120,10 @@ async def update_order_status(
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     raw = order["status"]
-    current_status = raw if isinstance(raw, OrderStatus) else OrderStatus(raw)
+    try:
+        current_status = raw if isinstance(raw, OrderStatus) else OrderStatus(raw)
+    except ValueError:
+        raise HTTPException(status_code=409, detail=f"Unknown current status: '{raw}'")
     if update.status not in VALID_TRANSITIONS.get(current_status, []):
         raise HTTPException(status_code=409, detail=f"Cannot transition '{current_status.value}' → '{update.status.value}'")
     db.update_order(order_id, {"status": update.status, "updated_at": datetime.utcnow().isoformat()})

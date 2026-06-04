@@ -10,15 +10,33 @@ import time
 from datetime import date, timedelta
 
 BASE_URL = "http://localhost"
-TOKEN = "hotel-os-secret-token-2024"
-
+AUTH_PORT = 8000
 RECEPTION_PORT = 8001
 HOUSEKEEPING_PORT = 8002
 ROOM_SERVICE_PORT = 8003
 MAINTENANCE_PORT = 8004
 
-headers = {"x-token": TOKEN, "Content-Type": "application/json"}
 client = httpx.Client(timeout=10.0)
+
+
+def get_token(email: str, password: str) -> str:
+    """Obtain a JWT token for the given credentials."""
+    r = client.post(
+        f"{BASE_URL}:{AUTH_PORT}/auth/login",
+        data={"username": email, "password": password},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    r.raise_for_status()
+    return r.json()["access_token"]
+
+
+# Login as admin (used for most operations)
+ADMIN_TOKEN = get_token("admin@hotel.com", "admin123")
+HK_TOKEN    = get_token("housekeeping@hotel.com", "staff123")
+
+def headers(token: str = None) -> dict:
+    t = token or ADMIN_TOKEN
+    return {"Authorization": f"Bearer {t}", "Content-Type": "application/json"}
 
 
 def test_ts01_room_allocation_algorithm():
@@ -48,7 +66,7 @@ def test_ts01_room_allocation_algorithm():
 
     try:
         response = client.post(
-            f"{BASE_URL}:{RECEPTION_PORT}/check-in", json=check_in_data, headers=headers
+            f"{BASE_URL}:{RECEPTION_PORT}/check-in", json=check_in_data, headers=headers()
         )
         print(f"✓ Check-in request: {response.status_code}")
         if response.status_code == 200:
@@ -79,7 +97,7 @@ def test_ts02_checkout_auto_clean_queue():
         response = client.post(
             f"{BASE_URL}:{RECEPTION_PORT}/check-out",
             json=checkout_data,
-            headers=headers,
+            headers=headers(),
         )
         print(f"✓ Check-out request: {response.status_code}")
         if response.status_code == 200:
@@ -109,14 +127,14 @@ def test_ts03_housekeeping_workflow():
     room_id = 3
 
     try:
-        response = client.get(f"{BASE_URL}:{HOUSEKEEPING_PORT}/queue", headers=headers)
+        response = client.get(f"{BASE_URL}:{HOUSEKEEPING_PORT}/queue", headers=headers())
         print(f"✓ Get cleaning queue: {response.status_code}")
         print(f"  - Queue items: {len(response.json()['queue'])}")
 
         response = client.post(
             f"{BASE_URL}:{HOUSEKEEPING_PORT}/clean/start",
             params={"room_id": room_id},
-            headers=headers,
+            headers=headers(),
         )
         print(f"✓ Start cleaning: {response.status_code}")
         if response.status_code == 200:
@@ -127,7 +145,7 @@ def test_ts03_housekeeping_workflow():
         response = client.post(
             f"{BASE_URL}:{HOUSEKEEPING_PORT}/clean/complete",
             params={"room_id": room_id},
-            headers=headers,
+            headers=headers(),
         )
         print(f"✓ Complete cleaning: {response.status_code}")
         if response.status_code == 200:
@@ -160,7 +178,7 @@ def test_ts04_room_service_integration():
 
     try:
         response = client.post(
-            f"{BASE_URL}:{ROOM_SERVICE_PORT}/orders", json=order_data, headers=headers
+            f"{BASE_URL}:{ROOM_SERVICE_PORT}/orders", json=order_data, headers=headers()
         )
         print(f"✓ Create order: {response.status_code}")
         if response.status_code == 201:
@@ -173,21 +191,21 @@ def test_ts04_room_service_integration():
             response = client.put(
                 f"{BASE_URL}:{ROOM_SERVICE_PORT}/orders/{order_id}/status",
                 json={"status": "preparing"},
-                headers=headers,
+                headers=headers(),
             )
             print(f"✓ Update to preparing: {response.status_code}")
 
             response = client.put(
                 f"{BASE_URL}:{ROOM_SERVICE_PORT}/orders/{order_id}/status",
                 json={"status": "in_delivery"},
-                headers=headers,
+                headers=headers(),
             )
             print(f"✓ Update to in_delivery: {response.status_code}")
 
             response = client.put(
                 f"{BASE_URL}:{ROOM_SERVICE_PORT}/orders/{order_id}/status",
                 json={"status": "delivered"},
-                headers=headers,
+                headers=headers(),
             )
             print(f"✓ Update to delivered: {response.status_code}")
             print("✓ PASSED: Order processed and charges tracked")
@@ -224,13 +242,13 @@ def test_ts05_maintenance_priority_queue():
                     "description": issue["description"],
                     "priority": issue["priority"],
                 },
-                headers=headers,
+                headers=headers(),
             )
             if response.status_code == 201:
                 print(f"  ✓ {issue['priority'].upper()}: Room {issue['room_id']}")
 
         response = client.get(
-            f"{BASE_URL}:{MAINTENANCE_PORT}/maintenance/queue", headers=headers
+            f"{BASE_URL}:{MAINTENANCE_PORT}/maintenance/queue", headers=headers()
         )
         print(f"\nPriority Queue (sorted):")
         if response.status_code == 200:
@@ -278,7 +296,7 @@ def test_ts06_concurrent_checkin():
 
     try:
         response = client.post(
-            f"{BASE_URL}:{RECEPTION_PORT}/check-in", json=check_in_1, headers=headers
+            f"{BASE_URL}:{RECEPTION_PORT}/check-in", json=check_in_1, headers=headers()
         )
         print(f"✓ First check-in: {response.status_code}")
         if response.status_code == 200:

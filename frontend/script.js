@@ -22,6 +22,12 @@ const NAV_LABELS = {
   maintenance:'🔧 Maintenance', events:'📡 Events', admin:'⚙️ Users',
 };
 
+const SEC_TITLES = {
+  overview:'Overview', rooms:'Rooms', guests:'Guests', bookings:'Bookings',
+  orders:'Room Service', housekeeping:'Housekeeping', maintenance:'Maintenance',
+  events:'Live Events', admin:'User Management',
+};
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let token = localStorage.getItem('hotel_token');
 let user  = null;
@@ -70,7 +76,7 @@ function fmt(iso) {
 
 function badge(val) {
   const v = (val || '').toLowerCase().replace(/ /g,'_');
-  return `<span class="badge badge-${v}">${val}</span>`;
+  return `<span class="badge badge-${v}">${(val||'').replace(/_/g,' ')}</span>`;
 }
 
 function openModal(id)  { document.getElementById(id)?.classList.add('open'); }
@@ -81,81 +87,45 @@ function showPage(id) {
   document.getElementById(id)?.classList.add('active');
 }
 
-function showSection(id) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById(id)?.classList.add('active');
-  document.querySelectorAll('.nav-link').forEach(l => {
-    l.classList.toggle('active', l.dataset.sec === id);
+function showSection(sec) {
+  const secId = sec.startsWith('sec-') ? sec : `sec-${sec}`;
+  document.querySelectorAll('#page-staff .section').forEach(s => s.classList.remove('active'));
+  document.getElementById(secId)?.classList.add('active');
+  document.querySelectorAll('#sidebar-nav .nav-link').forEach(l => {
+    l.classList.toggle('active', l.dataset.sec === sec);
   });
-  const titles = { overview:'Overview',rooms:'Rooms',guests:'Guests',bookings:'Bookings',
-    orders:'Room Service',housekeeping:'Housekeeping',maintenance:'Maintenance',events:'Live Events',admin:'User Management' };
   const el = document.getElementById('page-title');
-  if (el) el.textContent = titles[id] || id;
+  if (el) el.textContent = SEC_TITLES[sec] || sec;
 }
 
-// ── Auth tab switch ───────────────────────────────────────────────────────────
+// ── Auth tab ─────────────────────────────────────────────────────────────────
 function authTab(tab) {
-  const loginForm  = document.getElementById('form-login');
-  const regForm    = document.getElementById('form-register');
-  const tabLogin   = document.getElementById('tab-login');
-  const tabReg     = document.getElementById('tab-register');
-
+  const loginForm = document.getElementById('form-login');
+  const regForm   = document.getElementById('form-register');
+  const tabLogin  = document.getElementById('tab-login');
+  const tabReg    = document.getElementById('tab-register');
   if (tab === 'login') {
-    loginForm.style.display = 'flex';
-    regForm.style.display   = 'none';
-    tabLogin.classList.add('active');
-    tabReg.classList.remove('active');
+    loginForm.style.display = 'flex'; regForm.style.display = 'none';
+    tabLogin.classList.add('active'); tabReg.classList.remove('active');
   } else {
-    loginForm.style.display = 'none';
-    regForm.style.display   = 'flex';
-    tabLogin.classList.remove('active');
-    tabReg.classList.add('active');
+    loginForm.style.display = 'none'; regForm.style.display = 'flex';
+    tabLogin.classList.remove('active'); tabReg.classList.add('active');
   }
 }
 
-// Password visibility toggle
 function togglePw(inputId, eyeId) {
   const inp = document.getElementById(inputId);
   const eye = document.getElementById(eyeId);
   if (!inp) return;
-  if (inp.type === 'password') { inp.type = 'text';     if (eye) eye.textContent = '🙈'; }
-  else                         { inp.type = 'password'; if (eye) eye.textContent = '👁'; }
+  if (inp.type === 'password') { inp.type = 'text'; if (eye) eye.textContent = '🙈'; }
+  else { inp.type = 'password'; if (eye) eye.textContent = '👁'; }
 }
 
-// Click-to-fill demo credentials
 function fillLogin(email, pw) {
   const form = document.getElementById('form-login');
   if (!form) return;
   form.querySelector('[name=email]').value    = email;
   form.querySelector('[name=password]').value = pw;
-}
-
-// Password strength (register form)
-function checkStrength(pw) {
-  const wrap  = document.getElementById('pw-strength-wrap');
-  const bar   = document.getElementById('pw-strength-bar');
-  const label = document.getElementById('pw-strength-label');
-  if (!wrap || !bar || !label) return;
-  if (!pw) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  let score = 0;
-  if (pw.length >= 6)  score++;
-  if (pw.length >= 10) score++;
-  if (/[A-Z]/.test(pw)) score++;
-  if (/[0-9]/.test(pw)) score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  const levels = [
-    { pct:'20%', color:'#ef4444', text:'Very weak' },
-    { pct:'40%', color:'#f97316', text:'Weak' },
-    { pct:'60%', color:'#eab308', text:'Fair' },
-    { pct:'80%', color:'#22c55e', text:'Strong' },
-    { pct:'100%',color:'#10b981', text:'Very strong' },
-  ];
-  const lvl = levels[Math.min(score, 4)];
-  bar.style.width      = lvl.pct;
-  bar.style.background = lvl.color;
-  label.textContent    = lvl.text;
-  label.style.color    = lvl.color;
 }
 
 // ── LOGIN ─────────────────────────────────────────────────────────────────────
@@ -166,10 +136,8 @@ async function doLogin(e) {
   const pw    = form.querySelector('[name=password]').value;
   const errEl = document.getElementById('login-err');
   const btn   = document.getElementById('login-btn-text');
-
   errEl.style.display = 'none';
   if (btn) btn.textContent = 'Signing in…';
-
   try {
     const body = new URLSearchParams({ username: email, password: pw });
     const r = await fetch(`${API.AUTH}/auth/login`, {
@@ -179,16 +147,13 @@ async function doLogin(e) {
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.detail || 'Login failed');
-
     token = data.access_token;
     user  = data.user;
     localStorage.setItem('hotel_token', token);
     localStorage.setItem('hotel_user',  JSON.stringify(user));
-
     enterApp();
   } catch (err) {
-    errEl.textContent    = err.message;
-    errEl.style.display  = 'block';
+    errEl.textContent = err.message; errEl.style.display = 'block';
     if (btn) btn.textContent = 'Sign In →';
   }
 }
@@ -202,27 +167,21 @@ async function doRegister(e) {
   const email = form.querySelector('[name=email]').value.trim();
   const pw    = form.querySelector('[name=password]').value;
   const errEl = document.getElementById('reg-err');
-
   errEl.style.display = 'none';
-
   try {
-    const full_name = `${fname} ${lname}`.trim();
     const r = await fetch(`${API.AUTH}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pw, full_name, role: 'guest' }),
+      body: JSON.stringify({ email, password: pw, full_name: `${fname} ${lname}`.trim(), role: 'guest' }),
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.detail || 'Registration failed');
-
     toast('Account created! Please sign in.', 'success');
-    form.reset();
-    authTab('login');
+    form.reset(); authTab('login');
     const loginEmail = document.querySelector('#form-login [name=email]');
     if (loginEmail) loginEmail.value = email;
   } catch (err) {
-    errEl.textContent   = err.message;
-    errEl.style.display = 'block';
+    errEl.textContent = err.message; errEl.style.display = 'block';
   }
 }
 
@@ -232,25 +191,20 @@ function logout() {
   localStorage.removeItem('hotel_token');
   localStorage.removeItem('hotel_user');
   if (state.ws) { try { state.ws.close(); } catch {} state.ws = null; }
-  showPage('page-auth');
-  authTab('login');
+  showPage('page-auth'); authTab('login');
 }
 
-// ── ENTER APP after login ─────────────────────────────────────────────────────
+// ── ENTER APP ─────────────────────────────────────────────────────────────────
 function enterApp() {
   if (!user) return logout();
   const role = user.role;
 
   if (role === 'guest') {
-    // Guest portal
-    document.getElementById('guest-name').textContent = user.full_name || 'Guest';
+    document.getElementById('guest-name').textContent  = user.full_name || 'Guest';
     document.getElementById('guest-email').textContent = user.email;
-    showPage('page-guest');
-    loadGuestData();
-    return;
+    showPage('page-guest'); loadGuestData(); return;
   }
 
-  // Staff / Admin dashboard
   document.getElementById('staff-role-label').textContent =
     role.charAt(0).toUpperCase() + role.slice(1).replace('_',' ');
   document.getElementById('staff-email').textContent = user.email;
@@ -258,23 +212,19 @@ function enterApp() {
   // Build sidebar nav
   const nav = document.getElementById('sidebar-nav');
   nav.innerHTML = '';
-  const sections = ROLE_NAV[role] || ROLE_NAV.reception;
-  sections.forEach(sec => {
-    const a = document.createElement('a');
-    a.className = 'nav-link';
-    a.href = '#';
-    a.dataset.sec = sec;
-    a.textContent = NAV_LABELS[sec] || sec;
-    a.addEventListener('click', e => { e.preventDefault(); showSection(sec); loadSection(sec); });
-    nav.appendChild(a);
+  (ROLE_NAV[role] || ROLE_NAV.reception).forEach(sec => {
+    const btn = document.createElement('button');
+    btn.className    = 'nav-link';
+    btn.dataset.sec  = sec;
+    btn.innerHTML    = NAV_LABELS[sec] || sec;
+    btn.addEventListener('click', () => { showSection(sec); loadSection(sec); });
+    nav.appendChild(btn);
   });
 
   showPage('page-staff');
-  showSection('sec-overview');
-  updateClock();
-  setInterval(updateClock, 30000);
-  connectWS();
-  loadAll();
+  showSection('overview');
+  updateClock(); setInterval(updateClock, 30000);
+  connectWS(); loadAll();
 }
 
 function updateClock() {
@@ -282,7 +232,6 @@ function updateClock() {
   if (el) el.textContent = new Date().toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 
-// ── Section lazy-loader ───────────────────────────────────────────────────────
 function loadSection(sec) {
   const loaders = {
     overview:     loadAll,
@@ -290,7 +239,7 @@ function loadSection(sec) {
     guests:       loadGuests,
     bookings:     loadBookings,
     orders:       loadOrders,
-    housekeeping: renderHousekeeping,
+    housekeeping: () => renderHousekeeping(),
     maintenance:  loadMaintenance,
     events:       () => {},
     admin:        loadUsers,
@@ -306,25 +255,18 @@ function connectWS() {
   setWS('connecting');
   const ws = new WebSocket(API.WS);
   state.ws = ws;
-
-  ws.onopen = () => { setWS('connected'); state.wsRetry = 2000; };
-  ws.onmessage = ({ data }) => {
-    try { handleWSMsg(JSON.parse(data)); } catch {}
-  };
-  ws.onclose = () => {
-    setWS('disconnected');
-    setTimeout(connectWS, state.wsRetry);
-    state.wsRetry = Math.min(state.wsRetry * 1.5, 30000);
-  };
-  ws.onerror = () => setWS('disconnected');
+  ws.onopen    = () => { setWS('connected'); state.wsRetry = 2000; };
+  ws.onmessage = ({ data }) => { try { handleWSMsg(JSON.parse(data)); } catch {} };
+  ws.onclose   = () => { setWS('disconnected'); setTimeout(connectWS, state.wsRetry); state.wsRetry = Math.min(state.wsRetry * 1.5, 30000); };
+  ws.onerror   = () => setWS('disconnected');
 }
 
 function setWS(s) {
-  const dot   = document.getElementById('ws-dot');
-  const label = document.getElementById('ws-label');
+  const dot = document.getElementById('ws-dot');
+  const lbl = document.getElementById('ws-label');
   if (!dot) return;
-  dot.className = `ws-dot ws-${s}`;
-  label.textContent = s === 'connected' ? 'Live' : s === 'connecting' ? 'Connecting…' : 'Offline';
+  dot.className  = `ws-dot ws-${s}`;
+  lbl.textContent = s === 'connected' ? 'Live' : s === 'connecting' ? 'Connecting…' : 'Offline';
 }
 
 function handleWSMsg(msg) {
@@ -344,7 +286,8 @@ function handleWSMsg(msg) {
       loadRooms(); break;
     case 'room_cleaned':
       if (data?.room_id) {
-        const r = state.rooms.get(data.room_id); if (r) { r.status = 'clean'; renderRoomMap(); renderKPIs(); }
+        const r = state.rooms.get(data.room_id);
+        if (r) { r.status = 'clean'; renderRoomMap(); renderKPIs(); renderHousekeeping(); }
       }
       break;
     case 'order_status_changed': loadOrders(); break;
@@ -362,23 +305,20 @@ async function loadRooms() {
   const data = await apiFetch(`${API.REC}/rooms`).catch(() => null);
   if (!Array.isArray(data)) return;
   data.forEach(r => state.rooms.set(r.id, r));
-  renderKPIs(); renderRoomMap(); renderRoomsTable();
-  renderHousekeeping();
+  renderKPIs(); renderRoomMap(); renderRoomsTable(); renderHousekeeping();
 }
 
 async function loadGuests() {
   const data = await apiFetch(`${API.REC}/guests`).catch(() => null);
   if (!Array.isArray(data)) return;
-  state.guests.clear();
-  data.forEach(g => state.guests.set(g.id, g));
+  state.guests.clear(); data.forEach(g => state.guests.set(g.id, g));
   renderGuestsTable();
 }
 
 async function loadBookings() {
   const data = await apiFetch(`${API.REC}/bookings`).catch(() => null);
   if (!Array.isArray(data)) return;
-  state.bookings = data;
-  renderBookingsTable();
+  state.bookings = data; renderBookingsTable();
 }
 
 async function loadOrders() {
@@ -396,8 +336,7 @@ async function loadOrders() {
 async function loadMaintenance() {
   const data = await apiFetch(`${API.MAINT}/maintenance/queue`).catch(() => null);
   if (!data?.queue) return;
-  state.maint.clear();
-  data.queue.forEach(i => state.maint.set(i.issue_id, i));
+  state.maint.clear(); data.queue.forEach(i => state.maint.set(i.issue_id, i));
   renderMaintTable();
 }
 
@@ -427,7 +366,7 @@ function renderRoomMap() {
     const div = document.createElement('div');
     div.className = `room-tile tile-${r.status || 'clean'}`;
     div.title = `Room ${r.number} — ${r.status}`;
-    div.innerHTML = `<div>${r.number}</div><div style="font-size:.65rem;opacity:.7;margin-top:2px">${r.room_type}</div>`;
+    div.innerHTML = `<div style="font-weight:700;">${r.number}</div><div style="font-size:.62rem;opacity:.75;">${r.room_type}</div>`;
     div.onclick = () => showRoomModal(r);
     map.appendChild(div);
   });
@@ -441,12 +380,12 @@ function renderRoomsTable() {
     <tr>
       <td><strong>Room ${r.number}</strong></td>
       <td>${r.floor}</td>
-      <td style="text-transform:capitalize">${r.room_type}</td>
+      <td style="text-transform:capitalize;">${r.room_type}</td>
       <td>${badge(r.status)}</td>
       <td>$${r.price_per_night}</td>
       <td>${r.current_guest_id ? '#' + r.current_guest_id : '—'}</td>
-      <td style="color:#64748b">${fmt(r.last_cleaned)}</td>
-    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#475569;padding:24px">No rooms</td></tr>`;
+      <td style="color:var(--text-3);">${fmt(r.last_cleaned)}</td>
+    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">No rooms</td></tr>`;
 }
 
 function renderGuestsTable() {
@@ -457,10 +396,10 @@ function renderGuestsTable() {
     <tr>
       <td><strong>#${g.id}</strong></td>
       <td>${g.first_name} ${g.last_name}</td>
-      <td style="color:#94a3b8">${g.email}</td>
-      <td style="color:#94a3b8">${g.phone || '—'}</td>
-      <td style="color:#64748b">${fmt(g.created_at)}</td>
-    </tr>`).join('') || `<tr><td colspan="5" style="text-align:center;color:#475569;padding:24px">No guests</td></tr>`;
+      <td style="color:var(--text-2);">${g.email}</td>
+      <td style="color:var(--text-3);">${g.phone || '—'}</td>
+      <td style="color:var(--text-3);">${fmt(g.created_at)}</td>
+    </tr>`).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:24px;">No guests</td></tr>`;
 }
 
 function renderBookingsTable() {
@@ -475,7 +414,7 @@ function renderBookingsTable() {
       <td>${b.check_out_date}</td>
       <td>${badge(b.status)}</td>
       <td>${b.total_cost ? '$'+b.total_cost.toFixed(2) : '—'}</td>
-    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#475569;padding:24px">No bookings</td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">No bookings</td></tr>`;
 }
 
 function renderOrdersTable() {
@@ -488,13 +427,13 @@ function renderOrdersTable() {
     return `<tr>
       <td><strong>#${o.id}</strong></td>
       <td>Room ${o.room_id}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${items}">${items}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${items}">${items}</td>
       <td>$${(o.total_amount||0).toFixed(2)}</td>
       <td>${badge(o.status)}</td>
-      <td style="color:#64748b">${fmt(o.created_at)}</td>
+      <td style="color:var(--text-3);">${fmt(o.created_at)}</td>
       <td>${canAdvance ? `<button class="btn btn-ghost btn-sm" onclick="advanceOrder(${o.id},'${o.status}')">Advance →</button>` : '—'}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="7" style="text-align:center;color:#475569;padding:24px">No orders</td></tr>`;
+  }).join('') || `<tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">No orders</td></tr>`;
 }
 
 function renderHousekeeping() {
@@ -502,16 +441,16 @@ function renderHousekeeping() {
   if (!grid) return;
   const dirty = [...state.rooms.values()].filter(r => ['dirty','cleaning'].includes(r.status));
   if (!dirty.length) {
-    grid.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#475569">All rooms are clean ✨</div>`;
+    grid.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:var(--text-3);">All rooms are clean ✨</div>`;
     return;
   }
   grid.innerHTML = dirty.map(r => `
-    <div class="card" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <strong>Room ${r.number}</strong>${badge(r.status)}
+    <div class="hk-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span class="hk-card-title">Room ${r.number}</span>${badge(r.status)}
       </div>
-      <div style="font-size:.8rem;color:#64748b;margin-bottom:12px;text-transform:capitalize">${r.room_type} · Floor ${r.floor}</div>
-      <div style="display:flex;gap:8px">
+      <div class="hk-card-sub" style="margin-bottom:14px;text-transform:capitalize;">${r.room_type} · Floor ${r.floor}</div>
+      <div style="display:flex;gap:8px;">
         ${r.status==='dirty'    ? `<button class="btn btn-warning btn-sm" onclick="startClean(${r.id})">Start Cleaning</button>` : ''}
         ${r.status==='cleaning' ? `<button class="btn btn-success btn-sm" onclick="completeClean(${r.id})">Mark Clean ✓</button>` : ''}
       </div>
@@ -529,9 +468,9 @@ function renderMaintTable() {
       <td>${i.description}</td>
       <td>${badge(i.priority)}</td>
       <td>${badge(i.status)}</td>
-      <td style="color:#64748b">—</td>
+      <td style="color:var(--text-3);">—</td>
       <td>${i.status!=='resolved' ? `<button class="btn btn-ghost btn-sm" onclick="resolveIssueById(${i.issue_id})">Resolve</button>` : '—'}</td>
-    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#475569;padding:24px">No issues</td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">No issues</td></tr>`;
 }
 
 function renderUsersTable(users) {
@@ -541,26 +480,25 @@ function renderUsersTable(users) {
     <tr>
       <td><strong>#${u.id}</strong></td>
       <td>${u.full_name}</td>
-      <td style="color:#94a3b8">${u.email}</td>
+      <td style="color:var(--text-2);">${u.email}</td>
       <td>${badge(u.role)}</td>
-      <td>${u.is_active ? '<span style="color:#22c55e">Active</span>' : '<span style="color:#ef4444">Inactive</span>'}</td>
+      <td>${u.is_active ? `<span style="color:var(--green);font-weight:600;">Active</span>` : `<span style="color:var(--red);font-weight:600;">Inactive</span>`}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="toggleUser(${u.id})">${u.is_active ? 'Deactivate' : 'Activate'}</button></td>
     </tr>`).join('');
 }
 
-// ── Room detail modal ─────────────────────────────────────────────────────────
 function showRoomModal(r) {
   document.getElementById('room-modal-title').textContent = `Room ${r.number}`;
   document.getElementById('room-modal-body').innerHTML = `
-    <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+    <table style="width:100%;border-collapse:collapse;font-size:.875rem;">
       ${[['Number',r.number],['Floor',r.floor],['Type',r.room_type],
          ['Status',badge(r.status)],['Price/night','$'+r.price_per_night],
-         ['Current guest',r.current_guest_id ? '#'+r.current_guest_id : '—'],
+         ['Guest',r.current_guest_id ? '#'+r.current_guest_id : '—'],
          ['Last cleaned',fmt(r.last_cleaned)],
          ['Amenities',(r.amenities||[]).join(', ')||'—']
-        ].map(([k,v]) => `<tr style="border-bottom:1px solid #1e293b">
-          <td style="padding:8px 12px;color:#64748b;font-weight:600;width:45%">${k}</td>
-          <td style="padding:8px 12px">${v}</td></tr>`).join('')}
+        ].map(([k,v]) => `<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:9px 12px;color:var(--text-2);font-weight:600;width:45%;">${k}</td>
+          <td style="padding:9px 12px;">${v}</td></tr>`).join('')}
     </table>`;
   openModal('modal-room');
 }
@@ -575,10 +513,7 @@ async function addGuest(e) {
       body: JSON.stringify({ first_name: fd.get('first_name'), last_name: fd.get('last_name'),
         email: fd.get('email'), phone: fd.get('phone') || null }),
     });
-    toast('Guest registered ✓');
-    closeModal('modal-guest');
-    e.target.reset();
-    loadGuests();
+    toast('Guest registered ✓'); closeModal('modal-guest'); e.target.reset(); loadGuests();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -596,8 +531,7 @@ async function doCheckIn(e) {
       }),
     });
     toast(`✅ Check-in OK — Booking #${res.booking_id}, Room ${res.room_number}`);
-    closeModal('modal-checkin'); e.target.reset();
-    loadAll();
+    closeModal('modal-checkin'); e.target.reset(); loadAll();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -610,8 +544,7 @@ async function doCheckOut(e) {
       body: JSON.stringify({ booking_id: +fd.get('booking_id'), room_id: +fd.get('room_id') }),
     });
     toast(`🚪 Check-out OK — Total: $${res.bill?.total_bill?.toFixed(2)}`);
-    closeModal('modal-checkout'); e.target.reset();
-    loadAll();
+    closeModal('modal-checkout'); e.target.reset(); loadAll();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -627,9 +560,7 @@ async function placeOrder(e) {
         special_requests: fd.get('special_requests') || null,
       }),
     });
-    toast(`Order #${res.id} placed`);
-    closeModal('modal-order'); e.target.reset();
-    loadOrders();
+    toast(`Order #${res.id} placed`); closeModal('modal-order'); e.target.reset(); loadOrders();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -639,24 +570,21 @@ async function advanceOrder(id, status) {
   if (!next) return;
   try {
     await apiFetch(`${API.RS}/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status: next }) });
-    toast(`Order #${id} → ${next}`);
-    loadOrders();
+    toast(`Order #${id} → ${next}`); loadOrders();
   } catch (err) { toast(err.message, 'error'); }
 }
 
 async function startClean(roomId) {
   try {
     await apiFetch(`${API.HK}/clean/start?room_id=${roomId}`, { method: 'POST' });
-    toast(`Room ${roomId} cleaning started`);
-    loadRooms();
+    toast(`Room ${roomId} cleaning started`); loadRooms();
   } catch (err) { toast(err.message, 'error'); }
 }
 
 async function completeClean(roomId) {
   try {
     await apiFetch(`${API.HK}/clean/complete?room_id=${roomId}`, { method: 'POST' });
-    toast(`Room ${roomId} is clean ✓`);
-    loadRooms();
+    toast(`Room ${roomId} is clean ✓`); loadRooms();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -671,9 +599,7 @@ async function reportIssue(e) {
         priority: fd.get('priority'), reported_by: fd.get('reported_by') || user?.full_name || 'staff',
       }),
     });
-    toast(`Issue #${res.id} reported`);
-    closeModal('modal-issue'); e.target.reset();
-    loadMaintenance();
+    toast(`Issue #${res.id} reported`); closeModal('modal-issue'); e.target.reset(); loadMaintenance();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -682,8 +608,7 @@ async function resolveIssueById(issueId) {
     await apiFetch(`${API.MAINT}/maintenance/${issueId}/resolve`, {
       method: 'POST', body: JSON.stringify({ resolution_notes: 'Resolved by staff' }),
     });
-    toast(`Issue #${issueId} resolved ✓`);
-    loadMaintenance();
+    toast(`Issue #${issueId} resolved ✓`); loadMaintenance();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -696,41 +621,40 @@ async function addStaff(e) {
       body: JSON.stringify({ email: fd.get('email'), password: fd.get('password'),
         full_name: fd.get('full_name'), role: fd.get('role') }),
     });
-    toast('Staff account created ✓');
-    closeModal('modal-staff'); e.target.reset();
-    loadUsers();
+    toast('Staff account created ✓'); closeModal('modal-staff'); e.target.reset(); loadUsers();
   } catch (err) { toast(err.message, 'error'); }
 }
 
 async function toggleUser(userId) {
   try {
     const res = await apiFetch(`${API.AUTH}/auth/users/${userId}/activate`, { method: 'PATCH' });
-    toast(`User ${res.is_active ? 'activated' : 'deactivated'}`);
-    loadUsers();
+    toast(`User ${res.is_active ? 'activated' : 'deactivated'}`); loadUsers();
   } catch (err) { toast(err.message, 'error'); }
 }
 
 // ── Events log ────────────────────────────────────────────────────────────────
 const EVT_COLOR = {
-  check_in_completed:'#22c55e', room_vacated:'#ef4444', room_cleaned:'#06b6d4',
-  order_status_changed:'#f59e0b', maintenance_updated:'#a855f7', dashboard_init:'#6366f1',
+  check_in_completed:'var(--green)', room_vacated:'var(--red)', room_cleaned:'var(--cyan)',
+  order_status_changed:'var(--yellow)', maintenance_updated:'var(--purple)',
+  dashboard_init:'var(--accent)', cleaning_started:'var(--yellow)',
 };
 
 function pushEvent(msg) {
   state.events.unshift(msg);
   if (state.events.length > 200) state.events.length = 200;
 
-  // Mini events on overview
   const mini = document.getElementById('mini-events');
   if (mini) {
-    if (mini.querySelector('[style*="No events"]')) mini.innerHTML = '';
+    if (mini.querySelector('div[style*="No events"]') || mini.textContent.trim() === 'No events yet…') mini.innerHTML = '';
+    const color = EVT_COLOR[msg.event_type] || 'var(--text-3)';
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:start;gap:10px;padding:10px 16px;border-bottom:1px solid #1e293b;font-size:.8rem';
-    const color = EVT_COLOR[msg.event_type] || '#64748b';
+    row.className = 'event-item';
     row.innerHTML = `
-      <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;margin-top:3px"></span>
-      <span style="color:${color};font-weight:700;min-width:120px">${msg.event_type}</span>
-      <span style="color:#475569;margin-left:auto;white-space:nowrap">${fmt(msg.timestamp)}</span>`;
+      <span class="event-dot" style="background:${color};"></span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;color:${color};">${msg.event_type.replace(/_/g,' ')}</div>
+        <div class="event-time">${fmt(msg.timestamp)}</div>
+      </div>`;
     mini.insertBefore(row, mini.firstChild);
     while (mini.children.length > 8) mini.removeChild(mini.lastChild);
   }
@@ -741,16 +665,16 @@ function renderEventStream() {
   const el = document.getElementById('event-stream');
   if (!el) return;
   if (!state.events.length) {
-    el.innerHTML = `<div style="padding:24px;text-align:center;color:#475569">Waiting for events…</div>`;
+    el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-3);">Waiting for events…</div>`;
     return;
   }
-  el.innerHTML = state.events.map(e => {
-    const color = EVT_COLOR[e.event_type] || '#64748b';
-    return `<div style="display:grid;grid-template-columns:160px 180px 100px 1fr;gap:10px;padding:8px 16px;border-bottom:1px solid #1e293b;align-items:start">
-      <span style="color:#475569">${fmt(e.timestamp)}</span>
-      <span style="font-weight:700;color:${color}">${e.event_type}</span>
-      <span style="color:#64748b">${e.service||'—'}</span>
-      <span style="word-break:break-all">${JSON.stringify(e.data||{})}</span>
+  el.innerHTML = state.events.map(ev => {
+    const color = EVT_COLOR[ev.event_type] || 'var(--text-3)';
+    return `<div style="display:grid;grid-template-columns:140px 160px 80px 1fr;gap:10px;padding:8px 16px;border-bottom:1px solid var(--border);align-items:start;font-size:.8rem;">
+      <span style="color:var(--text-3);">${fmt(ev.timestamp)}</span>
+      <span style="font-weight:700;color:${color};">${ev.event_type}</span>
+      <span style="color:var(--text-3);">${ev.service||'—'}</span>
+      <span style="word-break:break-all;color:var(--text-2);">${JSON.stringify(ev.data||{})}</span>
     </div>`;
   }).join('');
 }
@@ -759,10 +683,6 @@ function clearEvents() { state.events = []; renderEventStream(); }
 
 // ── Guest portal ──────────────────────────────────────────────────────────────
 async function loadGuestData() {
-  const guestId = user?.guest_id;
-  if (!guestId) return;
-
-  // Bookings
   const bookings = await apiFetch(`${API.REC}/bookings/my`).catch(() => []);
   const card = document.getElementById('guest-booking-card');
   if (card) {
@@ -770,23 +690,38 @@ async function loadGuestData() {
     if (active.length) {
       const b = active[0];
       card.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div><div style="font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Room</div><div style="font-size:1.5rem;font-weight:800;color:#818cf8">#${b.room_id}</div></div>
-          <div><div style="font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Booking</div><div style="font-size:1.5rem;font-weight:800">#${b.id}</div></div>
-          <div><div style="font-size:.72rem;color:#64748b;margin-bottom:4px">Check-in</div><div>${b.check_in_date}</div></div>
-          <div><div style="font-size:.72rem;color:#64748b;margin-bottom:4px">Check-out</div><div>${b.check_out_date}</div></div>
+        <div style="padding:4px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <div style="font-size:.72rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Room</div>
+              <div style="font-size:1.8rem;font-weight:800;color:var(--accent);">#${b.room_id}</div>
+            </div>
+            <div>
+              <div style="font-size:.72rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Booking</div>
+              <div style="font-size:1.8rem;font-weight:800;">#${b.id}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:12px;border-top:1px solid var(--border);">
+            <div>
+              <div style="font-size:.72rem;color:var(--text-3);margin-bottom:4px;">Check-in</div>
+              <div style="font-weight:600;">${b.check_in_date}</div>
+            </div>
+            <div>
+              <div style="font-size:.72rem;color:var(--text-3);margin-bottom:4px;">Check-out</div>
+              <div style="font-weight:600;">${b.check_out_date}</div>
+            </div>
+          </div>
         </div>`;
-      // Load orders for this room
       const orders = await apiFetch(`${API.RS}/orders/room/${b.room_id}`).catch(() => null);
       const tbody = document.getElementById('guest-orders-tbody');
       if (tbody && orders?.orders?.length) {
         tbody.innerHTML = orders.orders.map(o => {
           const items = Array.isArray(o.items) ? o.items.map(i => `${i.quantity}× ${i.name}`).join(', ') : '—';
-          return `<tr><td>#${o.id}</td><td>${items}</td><td>$${(o.total_amount||0).toFixed(2)}</td><td>${badge(o.status)}</td><td style="color:#64748b">${fmt(o.created_at)}</td></tr>`;
+          return `<tr><td>#${o.id}</td><td>${items}</td><td>$${(o.total_amount||0).toFixed(2)}</td><td>${badge(o.status)}</td><td style="color:var(--text-3);">${fmt(o.created_at)}</td></tr>`;
         }).join('');
       }
     } else {
-      card.innerHTML = `<p style="color:#64748b">No active booking found.</p>`;
+      card.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-3);">No active booking found.</div>`;
     }
   }
 }
@@ -797,19 +732,17 @@ async function guestOrder(e) {
   const bookings = await apiFetch(`${API.REC}/bookings/my`).catch(() => []);
   const active = (bookings || []).filter(b => b.status === 'checked_in');
   if (!active.length) { toast('No active booking found', 'error'); return; }
-  const roomId = active[0].room_id;
   try {
     const res = await apiFetch(`${API.RS}/orders`, {
       method: 'POST',
       body: JSON.stringify({
-        room_id: roomId,
+        room_id: active[0].room_id,
         items: [{ name: fd.get('item_name'), quantity: +fd.get('quantity'), price: +fd.get('price') }],
         special_requests: fd.get('special_requests') || null,
       }),
     });
     toast(`Order #${res.id} placed! We'll bring it to your room.`);
-    e.target.reset();
-    loadGuestData();
+    e.target.reset(); loadGuestData();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -819,17 +752,15 @@ async function guestReportIssue(e) {
   const bookings = await apiFetch(`${API.REC}/bookings/my`).catch(() => []);
   const active = (bookings || []).filter(b => b.status === 'checked_in');
   if (!active.length) { toast('No active booking found', 'error'); return; }
-  const roomId = active[0].room_id;
   try {
     await apiFetch(`${API.MAINT}/maintenance/report`, {
       method: 'POST',
       body: JSON.stringify({
-        room_id: roomId, description: fd.get('description'),
+        room_id: active[0].room_id, description: fd.get('description'),
         priority: fd.get('priority'), reported_by: user?.full_name || 'Guest',
       }),
     });
-    toast('Issue reported. Our team will attend shortly.');
-    e.target.reset();
+    toast('Issue reported. Our team will attend shortly.'); e.target.reset();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -837,7 +768,7 @@ function gNav(sec) {
   document.querySelectorAll('#page-guest .section').forEach(s => s.classList.remove('active'));
   document.getElementById(sec)?.classList.add('active');
   document.querySelectorAll('#page-guest .nav-link').forEach(l =>
-    l.classList.toggle('active', l.getAttribute('onclick')?.includes(sec)));
+    l.classList.toggle('active', l.getAttribute('onclick')?.includes(`'${sec}'`)));
 }
 
 // ── Modal backdrop close ──────────────────────────────────────────────────────
@@ -845,20 +776,13 @@ document.querySelectorAll('.modal-bg').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
 
-// ── Password strength listener ────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Set default dates on check-in form
   const today    = new Date().toISOString().split('T')[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
   const ciDate   = document.querySelector('#modal-checkin [name=check_in_date]');
   const coDate   = document.querySelector('#modal-checkin [name=check_out_date]');
   if (ciDate) ciDate.value = today;
   if (coDate) coDate.value = tomorrow;
-
-  // Password strength on register
-  const regPw = document.getElementById('reg-pw');
-  if (regPw) regPw.addEventListener('input', () => checkStrength(regPw.value));
-
-  // Auto-login if token exists
   if (token && user) enterApp();
 });

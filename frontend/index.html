@@ -4,266 +4,114 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HotelOS — Property Management</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: { extend: { colors: {
-        brand: { 400:'#818cf8', 500:'#6366f1', 600:'#4f46e5' }
-      }}}
-    }
-  </script>
-  <style>
-    *{box-sizing:border-box}
-    body{background:#0a0f1e;color:#f1f5f9;font-family:'Inter',system-ui,sans-serif;margin:0}
-
-    /* ── Auth page ── */
-    .auth-bg{
-      min-height:100vh;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,.28) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(139,92,246,.15) 0%, transparent 55%),
-        #0a0f1e;
-    }
-    .auth-card{
-      background:rgba(255,255,255,.04);
-      backdrop-filter:blur(24px);
-      -webkit-backdrop-filter:blur(24px);
-      border:1px solid rgba(255,255,255,.09);
-      border-radius:20px;
-      box-shadow:0 32px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
-    }
-    .auth-tab-btn{
-      flex:1;padding:13px;font-size:.85rem;font-weight:600;cursor:pointer;
-      background:none;border:none;color:#64748b;position:relative;transition:color .2s;
-    }
-    .auth-tab-btn.active{color:#a5b4fc}
-    .auth-tab-btn.active::after{
-      content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;
-      background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:2px;
-    }
-    .auth-input-wrap{position:relative}
-    .auth-input-wrap input{
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.1);
-      color:#f1f5f9;border-radius:10px;
-      padding:12px 44px 12px 14px;
-      width:100%;outline:none;font-size:.9rem;
-      transition:border-color .2s,box-shadow .2s;
-    }
-    .auth-input-wrap input:focus{
-      border-color:rgba(99,102,241,.7);
-      box-shadow:0 0 0 3px rgba(99,102,241,.15);
-      background:rgba(99,102,241,.06);
-    }
-    .auth-input-wrap input::placeholder{color:#475569}
-    .auth-input-icon{
-      position:absolute;left:13px;top:50%;transform:translateY(-50%);
-      color:#475569;font-size:.95rem;pointer-events:none;
-    }
-    .auth-input-wrap input{padding-left:40px}
-    .auth-eye{
-      position:absolute;right:13px;top:50%;transform:translateY(-50%);
-      color:#475569;cursor:pointer;font-size:.85rem;user-select:none;
-      background:none;border:none;padding:0;
-    }
-    .auth-eye:hover{color:#94a3b8}
-    .auth-btn{
-      width:100%;padding:13px;border:none;border-radius:11px;font-size:.9rem;font-weight:700;
-      cursor:pointer;letter-spacing:.02em;transition:all .2s;position:relative;overflow:hidden;
-    }
-    .auth-btn-primary{
-      background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);
-      color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.4);
-    }
-    .auth-btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(99,102,241,.5)}
-    .auth-btn-primary:active{transform:translateY(0)}
-    .auth-divider{display:flex;align-items:center;gap:12px;margin:4px 0}
-    .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
-    .credential-pill{
-      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
-      border-radius:8px;padding:8px 12px;font-size:.75rem;
-    }
-    @keyframes authIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
-    .auth-card{animation:authIn .35s ease}
-    @keyframes floatDot{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-    .float-1{animation:floatDot 3s ease-in-out infinite}
-    .float-2{animation:floatDot 4s ease-in-out .5s infinite}
-    .float-3{animation:floatDot 3.5s ease-in-out 1s infinite}
-    input,select,textarea{background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;width:100%;outline:none;font-size:.9rem;transition:border-color .15s}
-    input:focus,select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.2)}
-    select option{background:#1e293b}
-    label{display:block;font-size:.75rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
-    .page{display:none}.page.active{display:flex}
-    .section{display:none}.section.active{display:block}
-    .nav-link{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:8px;color:#94a3b8;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
-    .nav-link:hover{background:rgba(255,255,255,.05);color:#f1f5f9}
-    .nav-link.active{background:rgba(99,102,241,.15);color:#818cf8;border-left-color:#6366f1}
-    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100}
-    .modal-bg.open{display:flex}
-    .modal{background:#1e293b;border:1px solid #334155;border-radius:16px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:fadeUp .2s ease}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-    .badge-clean{background:rgba(34,197,94,.15);color:#22c55e}
-    .badge-occupied{background:rgba(239,68,68,.15);color:#ef4444}
-    .badge-cleaning{background:rgba(245,158,11,.15);color:#f59e0b}
-    .badge-dirty{background:rgba(148,163,184,.12);color:#94a3b8}
-    .badge-maintenance{background:rgba(168,85,247,.15);color:#a855f7}
-    .badge-received{background:rgba(6,182,212,.15);color:#06b6d4}
-    .badge-preparing{background:rgba(245,158,11,.15);color:#f59e0b}
-    .badge-in_delivery,.badge-in-delivery{background:rgba(99,102,241,.15);color:#818cf8}
-    .badge-delivered,.badge-checked_in{background:rgba(34,197,94,.15);color:#22c55e}
-    .badge-cancelled,.badge-checked_out{background:rgba(148,163,184,.12);color:#94a3b8}
-    .badge-reported{background:rgba(6,182,212,.15);color:#06b6d4}
-    .badge-resolved{background:rgba(34,197,94,.15);color:#22c55e}
-    .badge-critical{background:rgba(239,68,68,.2);color:#f87171}
-    .badge-high{background:rgba(245,158,11,.2);color:#fbbf24}
-    .badge-normal{background:rgba(6,182,212,.15);color:#06b6d4}
-    .badge-low{background:rgba(34,197,94,.15);color:#22c55e}
-    .room-tile{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-weight:700;transition:transform .15s,box-shadow .15s;border:2px solid transparent;font-size:.8rem}
-    .room-tile:hover{transform:scale(1.07);box-shadow:0 6px 20px rgba(0,0,0,.5)}
-    .tile-clean{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#22c55e}
-    .tile-occupied{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#ef4444}
-    .tile-cleaning{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#f59e0b}
-    .tile-dirty{background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.3);color:#94a3b8}
-    .tile-maintenance{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.4);color:#a855f7}
-    .toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:12px 18px;border-radius:10px;font-size:.875rem;font-weight:500;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.4);opacity:0;transform:translateX(20px);transition:opacity .25s,transform .25s;z-index:9999;max-width:340px}
-    .toast.show{opacity:1;transform:none}
-    .toast-success{background:#16a34a}
-    .toast-error{background:#dc2626}
-    .toast-info{background:#6366f1}
-    .kpi-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;border-top:3px solid}
-    table{width:100%;border-collapse:collapse}
-    th{padding:10px 14px;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;background:#1e293b;border-bottom:1px solid #334155}
-    td{padding:10px 14px;border-bottom:1px solid #1e293b;font-size:.875rem;vertical-align:middle}
-    tr:hover td{background:rgba(255,255,255,.02)}
-    .card{background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden}
-    .card-head{padding:14px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between}
-    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:filter .15s}
-    .btn:hover{filter:brightness(1.1)}
-    .btn-primary{background:#6366f1;color:#fff}
-    .btn-success{background:#16a34a;color:#fff}
-    .btn-danger{background:#dc2626;color:#fff}
-    .btn-warning{background:#d97706;color:#fff}
-    .btn-ghost{background:rgba(255,255,255,.07);color:#94a3b8;border:1px solid #334155}
-    .btn-sm{padding:5px 10px;font-size:.78rem}
-    .ws-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
-    .ws-connected{background:#22c55e;box-shadow:0 0 6px #22c55e}
-    .ws-disconnected{background:#ef4444}
-    .ws-connecting{background:#f59e0b;animation:pulse 1.2s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-    ::-webkit-scrollbar{width:4px;height:4px}
-    ::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"/>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
 <!-- ═══════════════════════ AUTH PAGE ═══════════════════════ -->
-<div id="page-auth" class="page active auth-bg items-center justify-center p-4" style="min-height:100vh;position:relative;overflow:hidden">
+<div id="page-auth" class="page active" style="min-height:100vh;width:100%;position:relative;overflow:hidden;">
+  <div class="auth-bg" style="width:100%;position:relative;">
+    <!-- Decorative shapes -->
+    <div class="auth-shape" style="width:280px;height:280px;background:radial-gradient(circle,rgba(67,97,238,.08),transparent 70%);top:8%;left:5%;animation-delay:0s;"></div>
+    <div class="auth-shape" style="width:200px;height:200px;background:radial-gradient(circle,rgba(108,131,243,.07),transparent 70%);bottom:12%;right:8%;animation-delay:2s;"></div>
+    <div class="auth-shape" style="width:150px;height:150px;background:radial-gradient(circle,rgba(14,168,106,.06),transparent 70%);top:50%;left:2%;animation-delay:4s;"></div>
 
-  <!-- Decorative floating orbs -->
-  <div class="float-1" style="position:absolute;top:12%;left:8%;width:320px;height:320px;background:radial-gradient(circle,rgba(99,102,241,.12),transparent 70%);border-radius:50%;pointer-events:none"></div>
-  <div class="float-2" style="position:absolute;bottom:15%;right:6%;width:260px;height:260px;background:radial-gradient(circle,rgba(139,92,246,.1),transparent 70%);border-radius:50%;pointer-events:none"></div>
-  <div class="float-3" style="position:absolute;top:55%;left:3%;width:180px;height:180px;background:radial-gradient(circle,rgba(6,182,212,.07),transparent 70%);border-radius:50%;pointer-events:none"></div>
+    <div class="auth-card" style="position:relative;z-index:1;">
 
-  <div style="width:100%;max-width:420px;position:relative;z-index:1">
-
-    <!-- Logo / Brand -->
-    <div style="text-align:center;margin-bottom:32px">
-      <div style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.2));border:1px solid rgba(99,102,241,.3);border-radius:20px;font-size:2rem;margin-bottom:16px">🏨</div>
-      <h1 style="font-size:1.9rem;font-weight:800;margin:0;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">HotelOS</h1>
-      <p style="color:#475569;font-size:.85rem;margin:6px 0 0;letter-spacing:.02em">Property Management System</p>
-    </div>
-
-    <!-- Card -->
-    <div class="auth-card">
-
-      <!-- Tabs -->
-      <div style="display:flex;border-bottom:1px solid rgba(255,255,255,.07)">
-        <button id="tab-login" class="auth-tab-btn active" onclick="authTab('login')">Sign In</button>
-        <button id="tab-register" class="auth-tab-btn" onclick="authTab('register')">Guest Register</button>
+      <!-- Header -->
+      <div class="auth-header">
+        <div class="auth-logo">🏨</div>
+        <div class="auth-title">HotelOS</div>
+        <div class="auth-sub">Property Management System</div>
       </div>
 
-      <div style="padding:28px">
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active" onclick="authTab('login')">Sign In</button>
+        <button id="tab-register" class="auth-tab" onclick="authTab('register')">Guest Register</button>
+      </div>
 
-        <!-- ── LOGIN FORM ── -->
-        <form id="form-login" onsubmit="doLogin(event)" style="display:flex;flex-direction:column;gap:16px">
+      <!-- Login Form -->
+      <div class="auth-body">
+        <form id="form-login" onsubmit="doLogin(event)" style="display:flex;flex-direction:column;gap:0">
 
-          <div>
-            <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Email address</label>
+          <div class="auth-form-group">
+            <label>Email address</label>
             <div class="auth-input-wrap">
               <span class="auth-input-icon">✉️</span>
               <input type="email" name="email" placeholder="you@hotel.com" required autocomplete="email"/>
             </div>
           </div>
 
-          <div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-              <label style="font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Password</label>
-            </div>
+          <div class="auth-form-group">
+            <label>Password</label>
             <div class="auth-input-wrap">
               <span class="auth-input-icon">🔒</span>
-              <input type="password" id="login-pw" name="password" placeholder="Enter your password" required autocomplete="current-password"/>
+              <input type="password" id="login-pw" name="password" placeholder="Your password" required autocomplete="current-password"/>
               <button type="button" class="auth-eye" onclick="togglePw('login-pw','eye-login')"><span id="eye-login">👁</span></button>
             </div>
           </div>
 
-          <button type="submit" class="auth-btn auth-btn-primary" style="margin-top:4px">
+          <button type="submit" class="auth-btn auth-btn-primary">
             <span id="login-btn-text">Sign In →</span>
           </button>
 
-          <p id="login-err" style="color:#f87171;font-size:.82rem;text-align:center;display:none;margin:0"></p>
+          <p id="login-err" style="color:var(--red);font-size:.82rem;text-align:center;display:none;margin-top:8px;"></p>
 
-          <div class="auth-divider"><span style="font-size:.72rem;color:#334155">Demo accounts</span></div>
+          <div class="auth-divider">Demo accounts</div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="credential-pill" style="cursor:pointer" onclick="fillLogin('admin@hotel.com','admin123')">
-              <div style="color:#818cf8;font-weight:600;margin-bottom:2px">⚙️ Admin</div>
-              <div style="color:#64748b">admin@hotel.com</div>
-              <div style="color:#475569">admin123</div>
+          <div class="cred-grid">
+            <div class="cred-pill" onclick="fillLogin('admin@hotel.com','admin123')">
+              <div class="cred-role">⚙️ Admin</div>
+              <div class="cred-info">admin@hotel.com</div>
+              <div class="cred-info">admin123</div>
             </div>
-            <div class="credential-pill" style="cursor:pointer" onclick="fillLogin('reception@hotel.com','staff123')">
-              <div style="color:#34d399;font-weight:600;margin-bottom:2px">🛎️ Reception</div>
-              <div style="color:#64748b">reception@hotel.com</div>
-              <div style="color:#475569">staff123</div>
+            <div class="cred-pill" onclick="fillLogin('reception@hotel.com','staff123')">
+              <div class="cred-role">🛎️ Reception</div>
+              <div class="cred-info">reception@hotel.com</div>
+              <div class="cred-info">staff123</div>
+            </div>
+            <div class="cred-pill" onclick="fillLogin('housekeeping@hotel.com','staff123')">
+              <div class="cred-role">🧹 Housekeeping</div>
+              <div class="cred-info">housekeeping@hotel.com</div>
+              <div class="cred-info">staff123</div>
+            </div>
+            <div class="cred-pill" onclick="fillLogin('maintenance@hotel.com','staff123')">
+              <div class="cred-role">🔧 Maintenance</div>
+              <div class="cred-info">maintenance@hotel.com</div>
+              <div class="cred-info">staff123</div>
             </div>
           </div>
 
         </form>
 
-        <!-- ── REGISTER FORM ── -->
-        <form id="form-register" onsubmit="doRegister(event)" style="display:none;flex-direction:column;gap:16px">
+        <!-- Register Form -->
+        <form id="form-register" onsubmit="doRegister(event)" style="display:none;flex-direction:column;gap:0">
+          <p style="color:var(--text-2);font-size:.84rem;margin-bottom:14px;text-align:center;">Create your guest account to manage bookings and order room service.</p>
 
-          <div style="text-align:center;padding:4px 0 8px">
-            <p style="color:#94a3b8;font-size:.85rem;margin:0">Create your guest account to manage bookings and order room service.</p>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
             <div>
-              <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">First Name</label>
-              <div class="auth-input-wrap">
-                <span class="auth-input-icon">👤</span>
-                <input type="text" name="first_name" placeholder="John" required/>
-              </div>
+              <label>First Name</label>
+              <input type="text" name="first_name" placeholder="John" required/>
             </div>
             <div>
-              <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Last Name</label>
-              <div class="auth-input-wrap">
-                <span class="auth-input-icon">👤</span>
-                <input type="text" name="last_name" placeholder="Doe" required/>
-              </div>
+              <label>Last Name</label>
+              <input type="text" name="last_name" placeholder="Doe" required/>
             </div>
           </div>
 
-          <div>
-            <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Email address</label>
+          <div class="auth-form-group">
+            <label>Email address</label>
             <div class="auth-input-wrap">
               <span class="auth-input-icon">✉️</span>
               <input type="email" name="email" placeholder="you@example.com" required autocomplete="email"/>
             </div>
           </div>
 
-          <div>
-            <label style="display:block;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Password</label>
+          <div class="auth-form-group">
+            <label>Password</label>
             <div class="auth-input-wrap">
               <span class="auth-input-icon">🔒</span>
               <input type="password" id="reg-pw" name="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password"/>
@@ -271,109 +119,98 @@
             </div>
           </div>
 
-          <!-- Password strength bar -->
-          <div id="pw-strength-wrap" style="display:none">
-            <div style="height:4px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden">
-              <div id="pw-strength-bar" style="height:100%;width:0;transition:width .3s,background .3s;border-radius:4px"></div>
-            </div>
-            <div id="pw-strength-label" style="font-size:.7rem;color:#64748b;margin-top:4px"></div>
-          </div>
-
-          <button type="submit" class="auth-btn auth-btn-primary">
-            Create Guest Account →
-          </button>
-
-          <p id="reg-err" style="color:#f87171;font-size:.82rem;text-align:center;display:none;margin:0"></p>
-
-          <p style="text-align:center;font-size:.78rem;color:#475569;margin:0">
+          <button type="submit" class="auth-btn auth-btn-primary">Create Guest Account →</button>
+          <p id="reg-err" style="color:var(--red);font-size:.82rem;text-align:center;display:none;margin-top:8px;"></p>
+          <p style="text-align:center;font-size:.78rem;color:var(--text-3);margin-top:12px;">
             Already have an account?
-            <span style="color:#818cf8;cursor:pointer;font-weight:600" onclick="authTab('login')">Sign in</span>
+            <span style="color:var(--accent);cursor:pointer;font-weight:600;" onclick="authTab('login')">Sign in</span>
           </p>
-
         </form>
-
       </div>
-    </div>
 
-    <p style="text-align:center;color:#334155;font-size:.73rem;margin-top:24px">
-      © 2024 HotelOS · Secure Property Management
-    </p>
+    </div>
+    <p style="text-align:center;color:var(--text-3);font-size:.72rem;margin-top:18px;">© 2025 HotelOS · Secure Property Management</p>
   </div>
-</div>  </div>
 </div>
 
 <!-- ═══════════════════════ STAFF DASHBOARD ═══════════════════════ -->
-<div id="page-staff" class="page" style="min-height:100vh">
+<div id="page-staff" class="page" style="min-height:100vh;width:100%;">
+
   <!-- Sidebar -->
-  <aside id="sidebar" class="w-56 bg-[#1e293b] border-r border-[#334155] flex flex-col h-screen fixed left-0 top-0 z-30 transition-transform">
-    <div class="flex items-center gap-3 px-4 py-4 border-b border-[#334155]">
-      <span class="text-2xl">🏨</span>
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🏨</div>
       <div>
-        <div class="font-bold text-sm text-white">HotelOS</div>
-        <div class="text-xs text-slate-400" id="staff-role-label">Staff</div>
+        <div class="logo-text">HotelOS</div>
+        <div class="logo-sub" id="staff-role-label">Staff Portal</div>
       </div>
     </div>
-    <nav class="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto" id="sidebar-nav"></nav>
-    <div class="px-4 py-3 border-t border-[#334155]">
-      <div class="flex items-center gap-2 mb-2">
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="ws-status">
         <span class="ws-dot ws-connecting" id="ws-dot"></span>
-        <span class="text-xs text-slate-400" id="ws-label">Connecting…</span>
+        <span id="ws-label">Connecting…</span>
       </div>
-      <div class="text-xs text-slate-400 truncate mb-2" id="staff-email"></div>
-      <button onclick="logout()" class="btn btn-ghost btn-sm w-full justify-center">Sign Out</button>
+      <div style="font-size:.74rem;color:var(--text-3);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="staff-email"></div>
+      <button onclick="logout()" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;">Sign Out</button>
     </div>
   </aside>
 
   <!-- Main -->
-  <div class="ml-56 flex flex-col min-h-screen w-full">
-    <!-- Topbar -->
-    <header class="h-14 bg-[#1e293b] border-b border-[#334155] flex items-center px-6 gap-4 sticky top-0 z-20">
-      <div class="font-bold text-sm flex-1" id="page-title">Dashboard</div>
-      <span class="text-xs text-slate-500" id="topbar-date"></span>
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <span class="topbar-date" id="topbar-date"></span>
       <button onclick="refreshData()" class="btn btn-ghost btn-sm">↻ Refresh</button>
     </header>
-
-    <!-- Content -->
-    <main class="flex-1 p-6 overflow-y-auto">
+    <main class="content">
 
       <!-- OVERVIEW -->
       <div id="sec-overview" class="section active">
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <div class="kpi-card" style="border-top-color:#6366f1">
-            <div class="text-2xl">🏨</div>
-            <div><div class="text-2xl font-black" id="kpi-total">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Total</div></div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon">🏨</div>
+            <div class="kpi-value" id="kpi-total">—</div>
+            <div class="kpi-label">Total Rooms</div>
           </div>
-          <div class="kpi-card" style="border-top-color:#22c55e">
-            <div class="text-2xl">✅</div>
-            <div><div class="text-2xl font-black text-green-400" id="kpi-clean">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Clean</div></div>
+          <div class="kpi-card" style="border-top:3px solid var(--green)">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-value" style="color:var(--green)" id="kpi-clean">—</div>
+            <div class="kpi-label">Clean</div>
           </div>
-          <div class="kpi-card" style="border-top-color:#ef4444">
-            <div class="text-2xl">🔴</div>
-            <div><div class="text-2xl font-black text-red-400" id="kpi-occupied">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Occupied</div></div>
+          <div class="kpi-card" style="border-top:3px solid var(--red)">
+            <div class="kpi-icon">🔴</div>
+            <div class="kpi-value" style="color:var(--red)" id="kpi-occupied">—</div>
+            <div class="kpi-label">Occupied</div>
           </div>
-          <div class="kpi-card" style="border-top-color:#f59e0b">
-            <div class="text-2xl">🧹</div>
-            <div><div class="text-2xl font-black text-yellow-400" id="kpi-cleaning">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Cleaning</div></div>
+          <div class="kpi-card" style="border-top:3px solid var(--yellow)">
+            <div class="kpi-icon">🧹</div>
+            <div class="kpi-value" style="color:var(--yellow)" id="kpi-cleaning">—</div>
+            <div class="kpi-label">Cleaning</div>
           </div>
-          <div class="kpi-card" style="border-top-color:#94a3b8">
-            <div class="text-2xl">⚠️</div>
-            <div><div class="text-2xl font-black text-slate-400" id="kpi-dirty">—</div><div class="text-xs text-slate-400 uppercase tracking-wide">Dirty</div></div>
+          <div class="kpi-card" style="border-top:3px solid var(--dirty-c)">
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-value" style="color:var(--dirty-c)" id="kpi-dirty">—</div>
+            <div class="kpi-label">Dirty</div>
           </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="card">
-            <div class="card-head"><h3 class="font-bold text-sm">Room Map</h3>
-              <div class="flex gap-2 text-xs">
-                <span class="text-green-400">● Clean</span><span class="text-red-400">● Occupied</span>
-                <span class="text-yellow-400">● Cleaning</span><span class="text-slate-400">● Dirty</span>
+            <div class="card-head">
+              <h3>Room Map</h3>
+              <div style="display:flex;gap:10px;font-size:.72rem;">
+                <span style="color:var(--green);">● Clean</span>
+                <span style="color:var(--red);">● Occupied</span>
+                <span style="color:var(--yellow);">● Cleaning</span>
+                <span style="color:var(--dirty-c);">● Dirty</span>
               </div>
             </div>
-            <div class="p-4 grid grid-cols-5 gap-2" id="room-map"></div>
+            <div style="padding:16px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;" id="room-map"></div>
           </div>
           <div class="card">
-            <div class="card-head"><h3 class="font-bold text-sm">Live Events</h3></div>
-            <div class="max-h-64 overflow-y-auto" id="mini-events">
-              <div class="p-4 text-slate-500 text-sm text-center">No events yet…</div>
+            <div class="card-head"><h3>Live Events</h3></div>
+            <div style="max-height:280px;overflow-y:auto;" id="mini-events">
+              <div style="padding:24px;text-align:center;color:var(--text-3);font-size:.84rem;">No events yet…</div>
             </div>
           </div>
         </div>
@@ -381,36 +218,36 @@
 
       <!-- ROOMS -->
       <div id="sec-rooms" class="section">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Rooms</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Rooms</h2>
         </div>
         <div class="card">
           <table>
             <thead><tr><th>Room</th><th>Floor</th><th>Type</th><th>Status</th><th>Price/Night</th><th>Guest</th><th>Last Cleaned</th></tr></thead>
-            <tbody id="rooms-tbody"><tr><td colspan="7" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+            <tbody id="rooms-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
 
       <!-- GUESTS -->
       <div id="sec-guests" class="section">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Guests</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Guests</h2>
           <button onclick="openModal('modal-guest')" class="btn btn-primary btn-sm">+ Add Guest</button>
         </div>
         <div class="card">
           <table>
             <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Registered</th></tr></thead>
-            <tbody id="guests-tbody"><tr><td colspan="5" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+            <tbody id="guests-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
 
       <!-- BOOKINGS -->
       <div id="sec-bookings" class="section">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Bookings</h2>
-          <div class="flex gap-2">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Bookings</h2>
+          <div style="display:flex;gap:8px;">
             <button onclick="openModal('modal-checkin')" class="btn btn-primary btn-sm">Check In</button>
             <button onclick="openModal('modal-checkout')" class="btn btn-danger btn-sm">Check Out</button>
           </div>
@@ -418,72 +255,72 @@
         <div class="card">
           <table>
             <thead><tr><th>ID</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Total</th></tr></thead>
-            <tbody id="bookings-tbody"><tr><td colspan="7" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+            <tbody id="bookings-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
 
       <!-- ORDERS -->
       <div id="sec-orders" class="section">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Room Service Orders</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Room Service Orders</h2>
           <button onclick="openModal('modal-order')" class="btn btn-primary btn-sm">+ New Order</button>
         </div>
         <div class="card">
           <table>
             <thead><tr><th>Order</th><th>Room</th><th>Items</th><th>Total</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
-            <tbody id="orders-tbody"><tr><td colspan="7" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+            <tbody id="orders-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
 
       <!-- HOUSEKEEPING -->
       <div id="sec-housekeeping" class="section">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Housekeeping Queue</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Housekeeping Queue</h2>
         </div>
-        <div id="hk-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="card p-6 text-center text-slate-500">No pending cleaning tasks ✨</div>
+        <div id="hk-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+          <div class="card" style="padding:24px;text-align:center;color:var(--text-3);">No pending cleaning tasks ✨</div>
         </div>
       </div>
 
       <!-- MAINTENANCE -->
       <div id="sec-maintenance" class="section">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Maintenance Queue</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Maintenance Queue</h2>
           <button onclick="openModal('modal-issue')" class="btn btn-warning btn-sm">+ Report Issue</button>
         </div>
         <div class="card">
           <table>
             <thead><tr><th>#</th><th>Room</th><th>Description</th><th>Priority</th><th>Status</th><th>Reported By</th><th>Action</th></tr></thead>
-            <tbody id="maint-tbody"><tr><td colspan="7" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+            <tbody id="maint-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
 
       <!-- EVENTS LOG -->
       <div id="sec-events" class="section">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Live Event Stream</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Live Event Stream</h2>
           <button onclick="clearEvents()" class="btn btn-ghost btn-sm">Clear</button>
         </div>
         <div class="card">
-          <div id="event-stream" class="font-mono text-xs max-h-[calc(100vh-200px)] overflow-y-auto">
-            <div class="p-4 text-slate-500 text-center">Waiting for events…</div>
+          <div id="event-stream" style="max-height:calc(100vh - 220px);overflow-y:auto;font-family:monospace;font-size:.8rem;">
+            <div style="padding:24px;text-align:center;color:var(--text-3);">Waiting for events…</div>
           </div>
         </div>
       </div>
 
       <!-- ADMIN -->
       <div id="sec-admin" class="section">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">User Management</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">User Management</h2>
           <button onclick="openModal('modal-staff')" class="btn btn-primary btn-sm">+ Add Staff</button>
         </div>
         <div class="card">
           <table>
             <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="users-tbody"><tr><td colspan="6" class="text-center text-slate-500 py-6">Loading…</td></tr></tbody>
+            <tbody id="users-tbody"><tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -493,58 +330,58 @@
 </div>
 
 <!-- ═══════════════════════ GUEST PORTAL ═══════════════════════ -->
-<div id="page-guest" class="page" style="min-height:100vh">
-  <aside class="w-56 bg-[#1e293b] border-r border-[#334155] flex flex-col h-screen fixed left-0 top-0 z-30">
-    <div class="flex items-center gap-3 px-4 py-4 border-b border-[#334155]">
-      <span class="text-2xl">🏨</span>
+<div id="page-guest" class="page" style="min-height:100vh;width:100%;">
+  <aside class="guest-sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🏨</div>
       <div>
-        <div class="font-bold text-sm text-white">HotelOS</div>
-        <div class="text-xs text-green-400">Guest Portal</div>
+        <div class="logo-text">HotelOS</div>
+        <div class="logo-sub" style="color:var(--green);">Guest Portal</div>
       </div>
     </div>
-    <nav class="flex-1 py-3 px-2 space-y-0.5">
-      <a class="nav-link active" onclick="gNav('g-home')" href="#">🏠 My Stay</a>
-      <a class="nav-link" onclick="gNav('g-order')" href="#">🍽️ Room Service</a>
-      <a class="nav-link" onclick="gNav('g-issue')" href="#">🔧 Report Issue</a>
+    <nav class="sidebar-nav">
+      <button class="nav-link active" onclick="gNav('g-home')"><span class="nav-icon">🏠</span> My Stay</button>
+      <button class="nav-link" onclick="gNav('g-order')"><span class="nav-icon">🍽️</span> Room Service</button>
+      <button class="nav-link" onclick="gNav('g-issue')"><span class="nav-icon">🔧</span> Report Issue</button>
     </nav>
-    <div class="px-4 py-3 border-t border-[#334155]">
-      <div class="text-xs text-slate-400 truncate mb-2" id="guest-email"></div>
-      <button onclick="logout()" class="btn btn-ghost btn-sm w-full justify-center">Sign Out</button>
+    <div class="sidebar-footer">
+      <div style="font-size:.74rem;color:var(--text-3);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="guest-email"></div>
+      <button onclick="logout()" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;">Sign Out</button>
     </div>
   </aside>
 
-  <div class="ml-56 flex flex-col min-h-screen">
-    <header class="h-14 bg-[#1e293b] border-b border-[#334155] flex items-center px-6">
-      <div class="font-bold">Welcome, <span id="guest-name" class="text-brand-400"></span></div>
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-title">Welcome, <span id="guest-name" style="color:var(--accent);"></span></div>
     </header>
-    <main class="flex-1 p-6">
+    <main class="content">
 
       <!-- MY STAY -->
       <div id="g-home" class="section active">
-        <h2 class="font-bold text-lg mb-4">My Bookings</h2>
-        <div id="guest-booking-card" class="card p-6 mb-4 text-slate-400 text-center">Loading…</div>
-        <h2 class="font-bold text-lg mb-4 mt-6">My Orders</h2>
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:14px;">My Bookings</h2>
+        <div id="guest-booking-card" class="card" style="padding:24px;color:var(--text-3);text-align:center;">Loading…</div>
+        <h2 style="font-size:1.1rem;font-weight:700;margin:22px 0 14px;">My Orders</h2>
         <div class="card">
           <table>
             <thead><tr><th>Order</th><th>Items</th><th>Total</th><th>Status</th><th>Time</th></tr></thead>
-            <tbody id="guest-orders-tbody"><tr><td colspan="5" class="text-center text-slate-500 py-6">No orders yet</td></tr></tbody>
+            <tbody id="guest-orders-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:24px;">No orders yet</td></tr></tbody>
           </table>
         </div>
       </div>
 
       <!-- ORDER FOOD -->
       <div id="g-order" class="section">
-        <h2 class="font-bold text-lg mb-4">Order Room Service</h2>
-        <div class="card max-w-lg">
-          <div class="p-6">
-            <form onsubmit="guestOrder(event)" class="space-y-4">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:14px;">Order Room Service</h2>
+        <div class="card" style="max-width:480px;">
+          <div style="padding:22px;">
+            <form onsubmit="guestOrder(event)" style="display:flex;flex-direction:column;gap:14px;">
               <div><label>Item Name</label><input name="item_name" placeholder="Club Sandwich" required/></div>
-              <div class="grid grid-cols-2 gap-4">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                 <div><label>Quantity</label><input name="quantity" type="number" min="1" value="1" required/></div>
                 <div><label>Price ($)</label><input name="price" type="number" step="0.01" min="0" placeholder="12.50" required/></div>
               </div>
               <div><label>Special Requests</label><input name="special_requests" placeholder="No onions, extra sauce…"/></div>
-              <button type="submit" class="btn btn-primary w-full justify-center">Place Order</button>
+              <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Place Order</button>
             </form>
           </div>
         </div>
@@ -552,20 +389,20 @@
 
       <!-- REPORT ISSUE -->
       <div id="g-issue" class="section">
-        <h2 class="font-bold text-lg mb-4">Report a Maintenance Issue</h2>
-        <div class="card max-w-lg">
-          <div class="p-6">
-            <form onsubmit="guestReportIssue(event)" class="space-y-4">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:14px;">Report a Maintenance Issue</h2>
+        <div class="card" style="max-width:480px;">
+          <div style="padding:22px;">
+            <form onsubmit="guestReportIssue(event)" style="display:flex;flex-direction:column;gap:14px;">
               <div><label>Description</label><input name="description" placeholder="AC not working" required/></div>
-              <div><label>Priority
+              <div><label>Priority</label>
                 <select name="priority" required>
                   <option value="low">Low</option>
                   <option value="normal" selected>Normal</option>
                   <option value="high">High</option>
                   <option value="critical">Critical</option>
                 </select>
-              </label></div>
-              <button type="submit" class="btn btn-warning w-full justify-center">Submit Report</button>
+              </div>
+              <button type="submit" class="btn btn-warning" style="width:100%;justify-content:center;">Submit Report</button>
             </form>
           </div>
         </div>
@@ -579,16 +416,16 @@
 
 <!-- Add Guest -->
 <div id="modal-guest" class="modal-bg">
-  <div class="modal modal-box">
-    <div class="card-head"><h3 class="font-bold">Register Guest</h3><button onclick="closeModal('modal-guest')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
-    <form onsubmit="addGuest(event)" class="p-5 space-y-3">
-      <div class="grid grid-cols-2 gap-3">
+  <div class="modal">
+    <div class="card-head"><h3>Register Guest</h3><button onclick="closeModal('modal-guest')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="addGuest(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div><label>First Name</label><input name="first_name" required placeholder="John"/></div>
         <div><label>Last Name</label><input name="last_name" required placeholder="Doe"/></div>
       </div>
       <div><label>Email</label><input type="email" name="email" required placeholder="john@example.com"/></div>
       <div><label>Phone</label><input name="phone" placeholder="+1 555 0100"/></div>
-      <div class="flex justify-end gap-2 pt-1">
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
         <button type="button" onclick="closeModal('modal-guest')" class="btn btn-ghost">Cancel</button>
         <button type="submit" class="btn btn-primary">Register</button>
       </div>
@@ -598,11 +435,11 @@
 
 <!-- Check-in -->
 <div id="modal-checkin" class="modal-bg">
-  <div class="modal modal-box">
-    <div class="card-head"><h3 class="font-bold">Guest Check-In</h3><button onclick="closeModal('modal-checkin')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
-    <form onsubmit="doCheckIn(event)" class="p-5 space-y-3">
+  <div class="modal">
+    <div class="card-head"><h3>Guest Check-In</h3><button onclick="closeModal('modal-checkin')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="doCheckIn(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
       <div><label>Guest ID</label><input type="number" name="guest_id" min="1" required placeholder="1"/></div>
-      <div><label>Room Type
+      <div><label>Room Type</label>
         <select name="room_type" required>
           <option value="">— Select —</option>
           <option value="single">Single ($50/night)</option>
@@ -610,14 +447,14 @@
           <option value="suite">Suite ($120/night)</option>
           <option value="accessible">Accessible ($85/night)</option>
         </select>
-      </label></div>
-      <div class="grid grid-cols-2 gap-3">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div><label>Check-in Date</label><input type="date" name="check_in_date" required/></div>
         <div><label>Check-out Date</label><input type="date" name="check_out_date" required/></div>
       </div>
-      <div><label>Preferred Floor</label><input type="number" name="preferred_floor" placeholder="1 or 2" min="1" max="2"/></div>
-      <div><label>Special Requests</label><input name="special_requests" placeholder="Late check-in…"/></div>
-      <div class="flex justify-end gap-2 pt-1">
+      <div><label>Preferred Floor (optional)</label><input type="number" name="preferred_floor" placeholder="1 or 2" min="1" max="2"/></div>
+      <div><label>Special Requests</label><input name="special_requests" placeholder="Late check-in, quiet room…"/></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
         <button type="button" onclick="closeModal('modal-checkin')" class="btn btn-ghost">Cancel</button>
         <button type="submit" class="btn btn-success">Confirm Check-In</button>
       </div>
@@ -627,12 +464,12 @@
 
 <!-- Check-out -->
 <div id="modal-checkout" class="modal-bg">
-  <div class="modal modal-box">
-    <div class="card-head"><h3 class="font-bold">Guest Check-Out</h3><button onclick="closeModal('modal-checkout')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
-    <form onsubmit="doCheckOut(event)" class="p-5 space-y-3">
+  <div class="modal">
+    <div class="card-head"><h3>Guest Check-Out</h3><button onclick="closeModal('modal-checkout')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="doCheckOut(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
       <div><label>Booking ID</label><input type="number" name="booking_id" min="1" required placeholder="1"/></div>
       <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="3"/></div>
-      <div class="flex justify-end gap-2 pt-1">
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
         <button type="button" onclick="closeModal('modal-checkout')" class="btn btn-ghost">Cancel</button>
         <button type="submit" class="btn btn-danger">Confirm Check-Out</button>
       </div>
@@ -642,17 +479,17 @@
 
 <!-- Place Order (staff) -->
 <div id="modal-order" class="modal-bg">
-  <div class="modal modal-box">
-    <div class="card-head"><h3 class="font-bold">Place Room Service Order</h3><button onclick="closeModal('modal-order')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
-    <form onsubmit="placeOrder(event)" class="p-5 space-y-3">
+  <div class="modal">
+    <div class="card-head"><h3>Place Room Service Order</h3><button onclick="closeModal('modal-order')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="placeOrder(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
       <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="3"/></div>
       <div><label>Item Name</label><input name="item_name" required placeholder="Club Sandwich"/></div>
-      <div class="grid grid-cols-2 gap-3">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div><label>Quantity</label><input type="number" name="quantity" min="1" value="1" required/></div>
         <div><label>Price ($)</label><input type="number" name="price" step="0.01" min="0" required placeholder="12.50"/></div>
       </div>
       <div><label>Special Requests</label><input name="special_requests" placeholder="No onions…"/></div>
-      <div class="flex justify-end gap-2 pt-1">
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
         <button type="button" onclick="closeModal('modal-order')" class="btn btn-ghost">Cancel</button>
         <button type="submit" class="btn btn-primary">Place Order</button>
       </div>
@@ -660,23 +497,23 @@
   </div>
 </div>
 
-<!-- Report Issue (staff) -->
+<!-- Report Issue -->
 <div id="modal-issue" class="modal-bg">
-  <div class="modal modal-box">
-    <div class="card-head"><h3 class="font-bold">Report Maintenance Issue</h3><button onclick="closeModal('modal-issue')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
-    <form onsubmit="reportIssue(event)" class="p-5 space-y-3">
+  <div class="modal">
+    <div class="card-head"><h3>Report Maintenance Issue</h3><button onclick="closeModal('modal-issue')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="reportIssue(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
       <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="5"/></div>
       <div><label>Description</label><input name="description" required placeholder="AC not working"/></div>
-      <div><label>Priority
+      <div><label>Priority</label>
         <select name="priority" required>
           <option value="low">Low</option>
           <option value="normal" selected>Normal</option>
           <option value="high">High</option>
           <option value="critical">Critical</option>
         </select>
-      </label></div>
+      </div>
       <div><label>Reported By</label><input name="reported_by" placeholder="Front desk"/></div>
-      <div class="flex justify-end gap-2 pt-1">
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
         <button type="button" onclick="closeModal('modal-issue')" class="btn btn-ghost">Cancel</button>
         <button type="submit" class="btn btn-warning">Submit</button>
       </div>
@@ -684,15 +521,15 @@
   </div>
 </div>
 
-<!-- Add Staff (admin) -->
+<!-- Add Staff -->
 <div id="modal-staff" class="modal-bg">
-  <div class="modal modal-box">
-    <div class="card-head"><h3 class="font-bold">Create Staff Account</h3><button onclick="closeModal('modal-staff')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
-    <form onsubmit="addStaff(event)" class="p-5 space-y-3">
+  <div class="modal">
+    <div class="card-head"><h3>Create Staff Account</h3><button onclick="closeModal('modal-staff')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="addStaff(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
       <div><label>Full Name</label><input name="full_name" required placeholder="Staff Member"/></div>
       <div><label>Email</label><input type="email" name="email" required placeholder="staff@hotel.com"/></div>
       <div><label>Password</label><input type="password" name="password" required minlength="6" placeholder="Min 6 chars"/></div>
-      <div><label>Role
+      <div><label>Role</label>
         <select name="role" required>
           <option value="reception">Reception</option>
           <option value="housekeeping">Housekeeping</option>
@@ -700,8 +537,8 @@
           <option value="maintenance">Maintenance</option>
           <option value="admin">Admin</option>
         </select>
-      </label></div>
-      <div class="flex justify-end gap-2 pt-1">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
         <button type="button" onclick="closeModal('modal-staff')" class="btn btn-ghost">Cancel</button>
         <button type="submit" class="btn btn-primary">Create</button>
       </div>
@@ -709,11 +546,11 @@
   </div>
 </div>
 
-<!-- Room Detail Modal -->
+<!-- Room Detail -->
 <div id="modal-room" class="modal-bg">
-  <div class="modal modal-box">
-    <div class="card-head"><h3 class="font-bold" id="room-modal-title">Room Details</h3><button onclick="closeModal('modal-room')" class="text-slate-400 hover:text-white text-xl leading-none">✕</button></div>
-    <div class="p-5" id="room-modal-body"></div>
+  <div class="modal">
+    <div class="card-head"><h3 id="room-modal-title">Room Details</h3><button onclick="closeModal('modal-room')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <div style="padding:20px;" id="room-modal-body"></div>
   </div>
 </div>
 

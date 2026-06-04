@@ -36,11 +36,14 @@ class MaintenanceIssueResponse(BaseModel):
     id: int
     room_id: int
     description: str
-    priority: PriorityLevel
+    priority: str  # store as plain string to avoid coercion issues
     status: str
     reported_by: str
     resolved_at: Optional[str] = None
-    created_at: str
+    resolution_notes: Optional[str] = None
+    created_at: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
 
 
 class PriorityQueue:

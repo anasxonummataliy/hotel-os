@@ -207,7 +207,7 @@ async def check_out(
     orders = db.get_orders_by_room(request.room_id)
     room_svc = sum(
         o.get("total_amount", 0) for o in orders
-        if (o["status"].value if hasattr(o["status"], "value") else o["status"]) == "delivered"
+        if str(o.get("status","")).replace("OrderStatus.","") == "delivered"
     )
     bill = calculate_bill(booking["check_in_date"], booking["check_out_date"], room.price_per_night, room_svc)
     db.update_room_status(request.room_id, RoomStatus.DIRTY)

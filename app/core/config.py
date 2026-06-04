@@ -3,8 +3,8 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # PostgreSQL
-    DATABASE_URL: str = "postgresql+psycopg2://anasxonummataliyev@localhost:5435/hotel_os"
+    # PostgreSQL — override via .env or environment variable
+    DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/hotel_os"
 
     # JWT
     SECRET_KEY: str = "hotel-os-super-secret-jwt-key-change-in-production-2024"
@@ -21,9 +21,6 @@ class Settings(BaseSettings):
     ROOM_SERVICE_PORT:         int = 8003
     MAINTENANCE_SERVICE_PORT:  int = 8004
     WEBSOCKET_GATEWAY_PORT:    int = 8005
-
-    # Legacy token (still accepted by services as fallback)
-    API_TOKEN: str = "hotel-os-secret-token-2024"
 
     # App
     DEBUG:       bool = False
