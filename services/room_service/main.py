@@ -75,6 +75,7 @@ async def create_order(order: OrderCreate, current: dict = Depends(any_authentic
     total = sum(i.price * i.quantity for i in order.items)
     created = db.create_order({
         "room_id": order.room_id,
+        
         "items": [i.model_dump() for i in order.items],
         "status": OrderStatus.RECEIVED,
         "total_amount": total,
