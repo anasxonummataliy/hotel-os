@@ -25,7 +25,7 @@ publisher  = make_publisher()
 subscriber = make_subscriber()
 
 _event_loop: asyncio.AbstractEventLoop = None
-_frontend_dir = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+_frontend_dir = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
 
 
 class ConnectionManager:
@@ -97,7 +97,7 @@ app = FastAPI(title="WebSocket Gateway", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 if os.path.isdir(_frontend_dir):
-    app.mount("/static", StaticFiles(directory=_frontend_dir), name="static")
+    app.mount("/assets", StaticFiles(directory=os.path.join(_frontend_dir, "assets")), name="assets")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -106,7 +106,19 @@ async def serve_frontend():
     if os.path.exists(html_path):
         with open(html_path) as f:
             return HTMLResponse(f.read())
-    return HTMLResponse("<h1>Hotel OS</h1>")
+    return HTMLResponse("""
+    <html><body style="font-family:sans-serif;padding:2rem">
+    <h1>🏨 HotelOS Dashboard</h1>
+    <p>Frontend not built yet. Run: <code>cd frontend && pnpm install && pnpm build</code></p>
+    <p>API docs: 
+      <a href="http://localhost:8000/docs">Auth</a> |
+      <a href="http://localhost:8001/docs">Reception</a> |
+      <a href="http://localhost:8002/docs">Housekeeping</a> |
+      <a href="http://localhost:8003/docs">Room Service</a> |
+      <a href="http://localhost:8004/docs">Maintenance</a>
+    </p>
+    </body></html>
+    """)
 
 
 @app.websocket("/ws/dashboard")

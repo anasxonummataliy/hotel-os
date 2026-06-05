@@ -83,10 +83,23 @@ def main():
     try:
         import redis
         redis.Redis(host="localhost", port=6379).ping()
-        print("running")
+        print("running ✓")
     except Exception as e:
         print(f"NOT running — {e}")
-        print("  Start Redis:  redis-server")
+        print("  ⚠  Start Redis first:  redis-server")
+        print("  Services will start but pub/sub events won't work.\n")
+
+    print("\nChecking PostgreSQL…", end=" ")
+    try:
+        import sqlalchemy
+        from app.core.config import settings
+        eng = sqlalchemy.create_engine(settings.DATABASE_URL)
+        with eng.connect() as conn:
+            conn.execute(sqlalchemy.text("SELECT 1"))
+        print("running ✓")
+    except Exception as e:
+        print(f"NOT running — {e}")
+        print("  ⚠  Start PostgreSQL and run migrations: alembic upgrade head\n")
 
     print("\nStarting services:")
     for key, cfg in SERVICES.items():
@@ -99,7 +112,8 @@ def main():
     print("  Housekeeping: http://localhost:8002/docs")
     print("  Room Service: http://localhost:8003/docs")
     print("  Maintenance:  http://localhost:8004/docs")
-    print("  Dashboard:    http://localhost:8005/")
+    print("  WS Gateway:   http://localhost:8005/")
+    print("  Dashboard:    http://localhost:5173/  (run: cd frontend && pnpm dev)")
     print("=" * 60)
     print("\nDefault accounts:")
     print("  admin@hotel.com        / admin123  (admin)")

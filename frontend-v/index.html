@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HotelOS — Property Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════ AUTH PAGE ═══════════════════════ -->
+<div id="page-auth" class="page active" style="min-height:100vh;width:100%;position:relative;overflow:hidden;">
+  <div class="auth-bg" style="width:100%;position:relative;">
+    <!-- Decorative shapes -->
+    <div class="auth-shape" style="width:280px;height:280px;background:radial-gradient(circle,rgba(67,97,238,.08),transparent 70%);top:8%;left:5%;animation-delay:0s;"></div>
+    <div class="auth-shape" style="width:200px;height:200px;background:radial-gradient(circle,rgba(108,131,243,.07),transparent 70%);bottom:12%;right:8%;animation-delay:2s;"></div>
+    <div class="auth-shape" style="width:150px;height:150px;background:radial-gradient(circle,rgba(14,168,106,.06),transparent 70%);top:50%;left:2%;animation-delay:4s;"></div>
+
+    <div class="auth-card" style="position:relative;z-index:1;">
+
+      <!-- Header -->
+      <div class="auth-header">
+        <div class="auth-logo">🏨</div>
+        <div class="auth-title">HotelOS</div>
+        <div class="auth-sub">Property Management System</div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active" onclick="authTab('login')">Sign In</button>
+        <button id="tab-register" class="auth-tab" onclick="authTab('register')">Guest Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <div class="auth-body">
+        <form id="form-login" onsubmit="doLogin(event)" style="display:flex;flex-direction:column;gap:0">
+
+          <div class="auth-form-group">
+            <label>Email address</label>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">✉️</span>
+              <input type="email" name="email" placeholder="you@hotel.com" required autocomplete="email"/>
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label>Password</label>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">🔒</span>
+              <input type="password" id="login-pw" name="password" placeholder="Your password" required autocomplete="current-password"/>
+              <button type="button" class="auth-eye" onclick="togglePw('login-pw','eye-login')"><span id="eye-login">👁</span></button>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-btn auth-btn-primary">
+            <span id="login-btn-text">Sign In →</span>
+          </button>
+
+          <p id="login-err" style="color:var(--red);font-size:.82rem;text-align:center;display:none;margin-top:8px;"></p>
+
+          <div class="auth-divider">Demo accounts</div>
+
+          <div class="cred-grid">
+            <div class="cred-pill" onclick="fillLogin('admin@hotel.com','admin123')">
+              <div class="cred-role">⚙️ Admin</div>
+              <div class="cred-info">admin@hotel.com</div>
+              <div class="cred-info">admin123</div>
+            </div>
+            <div class="cred-pill" onclick="fillLogin('reception@hotel.com','staff123')">
+              <div class="cred-role">🛎️ Reception</div>
+              <div class="cred-info">reception@hotel.com</div>
+              <div class="cred-info">staff123</div>
+            </div>
+            <div class="cred-pill" onclick="fillLogin('housekeeping@hotel.com','staff123')">
+              <div class="cred-role">🧹 Housekeeping</div>
+              <div class="cred-info">housekeeping@hotel.com</div>
+              <div class="cred-info">staff123</div>
+            </div>
+            <div class="cred-pill" onclick="fillLogin('maintenance@hotel.com','staff123')">
+              <div class="cred-role">🔧 Maintenance</div>
+              <div class="cred-info">maintenance@hotel.com</div>
+              <div class="cred-info">staff123</div>
+            </div>
+          </div>
+
+        </form>
+
+        <!-- Register Form -->
+        <form id="form-register" onsubmit="doRegister(event)" style="display:none;flex-direction:column;gap:0">
+          <p style="color:var(--text-2);font-size:.84rem;margin-bottom:14px;text-align:center;">Create your guest account to manage bookings and order room service.</p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div>
+              <label>First Name</label>
+              <input type="text" name="first_name" placeholder="John" required/>
+            </div>
+            <div>
+              <label>Last Name</label>
+              <input type="text" name="last_name" placeholder="Doe" required/>
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label>Email address</label>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">✉️</span>
+              <input type="email" name="email" placeholder="you@example.com" required autocomplete="email"/>
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label>Password</label>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">🔒</span>
+              <input type="password" id="reg-pw" name="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password"/>
+              <button type="button" class="auth-eye" onclick="togglePw('reg-pw','eye-reg')"><span id="eye-reg">👁</span></button>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-btn auth-btn-primary">Create Guest Account →</button>
+          <p id="reg-err" style="color:var(--red);font-size:.82rem;text-align:center;display:none;margin-top:8px;"></p>
+          <p style="text-align:center;font-size:.78rem;color:var(--text-3);margin-top:12px;">
+            Already have an account?
+            <span style="color:var(--accent);cursor:pointer;font-weight:600;" onclick="authTab('login')">Sign in</span>
+          </p>
+        </form>
+      </div>
+
+    </div>
+    <p style="text-align:center;color:var(--text-3);font-size:.72rem;margin-top:18px;">© 2025 HotelOS · Secure Property Management</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════ STAFF DASHBOARD ═══════════════════════ -->
+<div id="page-staff" class="page" style="min-height:100vh;width:100%;">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🏨</div>
+      <div>
+        <div class="logo-text">HotelOS</div>
+        <div class="logo-sub" id="staff-role-label">Staff Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="ws-status">
+        <span class="ws-dot ws-connecting" id="ws-dot"></span>
+        <span id="ws-label">Connecting…</span>
+      </div>
+      <div style="font-size:.74rem;color:var(--text-3);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="staff-email"></div>
+      <button onclick="logout()" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <span class="topbar-date" id="topbar-date"></span>
+      <button onclick="refreshData()" class="btn btn-ghost btn-sm">↻ Refresh</button>
+    </header>
+    <main class="content">
+
+      <!-- OVERVIEW -->
+      <div id="sec-overview" class="section active">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon">🏨</div>
+            <div class="kpi-value" id="kpi-total">—</div>
+            <div class="kpi-label">Total Rooms</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid var(--green)">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-value" style="color:var(--green)" id="kpi-clean">—</div>
+            <div class="kpi-label">Clean</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid var(--red)">
+            <div class="kpi-icon">🔴</div>
+            <div class="kpi-value" style="color:var(--red)" id="kpi-occupied">—</div>
+            <div class="kpi-label">Occupied</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid var(--yellow)">
+            <div class="kpi-icon">🧹</div>
+            <div class="kpi-value" style="color:var(--yellow)" id="kpi-cleaning">—</div>
+            <div class="kpi-label">Cleaning</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid var(--dirty-c)">
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-value" style="color:var(--dirty-c)" id="kpi-dirty">—</div>
+            <div class="kpi-label">Dirty</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="card">
+            <div class="card-head">
+              <h3>Room Map</h3>
+              <div style="display:flex;gap:10px;font-size:.72rem;">
+                <span style="color:var(--green);">● Clean</span>
+                <span style="color:var(--red);">● Occupied</span>
+                <span style="color:var(--yellow);">● Cleaning</span>
+                <span style="color:var(--dirty-c);">● Dirty</span>
+              </div>
+            </div>
+            <div style="padding:16px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;" id="room-map"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Live Events</h3></div>
+            <div style="max-height:280px;overflow-y:auto;" id="mini-events">
+              <div style="padding:24px;text-align:center;color:var(--text-3);font-size:.84rem;">No events yet…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROOMS -->
+      <div id="sec-rooms" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Rooms</h2>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Room</th><th>Floor</th><th>Type</th><th>Status</th><th>Price/Night</th><th>Guest</th><th>Last Cleaned</th></tr></thead>
+            <tbody id="rooms-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GUESTS -->
+      <div id="sec-guests" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Guests</h2>
+          <button onclick="openModal('modal-guest')" class="btn btn-primary btn-sm">+ Add Guest</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Registered</th></tr></thead>
+            <tbody id="guests-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BOOKINGS -->
+      <div id="sec-bookings" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Bookings</h2>
+          <div style="display:flex;gap:8px;">
+            <button onclick="openModal('modal-checkin')" class="btn btn-primary btn-sm">Check In</button>
+            <button onclick="openModal('modal-checkout')" class="btn btn-danger btn-sm">Check Out</button>
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>ID</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Total</th></tr></thead>
+            <tbody id="bookings-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div id="sec-orders" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Room Service Orders</h2>
+          <button onclick="openModal('modal-order')" class="btn btn-primary btn-sm">+ New Order</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Order</th><th>Room</th><th>Items</th><th>Total</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
+            <tbody id="orders-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- HOUSEKEEPING -->
+      <div id="sec-housekeeping" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Housekeeping Queue</h2>
+        </div>
+        <div id="hk-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+          <div class="card" style="padding:24px;text-align:center;color:var(--text-3);">No pending cleaning tasks ✨</div>
+        </div>
+      </div>
+
+      <!-- MAINTENANCE -->
+      <div id="sec-maintenance" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Maintenance Queue</h2>
+          <button onclick="openModal('modal-issue')" class="btn btn-warning btn-sm">+ Report Issue</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>#</th><th>Room</th><th>Description</th><th>Priority</th><th>Status</th><th>Reported By</th><th>Action</th></tr></thead>
+            <tbody id="maint-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- EVENTS LOG -->
+      <div id="sec-events" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Live Event Stream</h2>
+          <button onclick="clearEvents()" class="btn btn-ghost btn-sm">Clear</button>
+        </div>
+        <div class="card">
+          <div id="event-stream" style="max-height:calc(100vh - 220px);overflow-y:auto;font-family:monospace;font-size:.8rem;">
+            <div style="padding:24px;text-align:center;color:var(--text-3);">Waiting for events…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div id="sec-admin" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">User Management</h2>
+          <button onclick="openModal('modal-staff')" class="btn btn-primary btn-sm">+ Add Staff</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="users-tbody"><tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:24px;">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════ GUEST PORTAL ═══════════════════════ -->
+<div id="page-guest" class="page" style="min-height:100vh;width:100%;">
+  <aside class="guest-sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🏨</div>
+      <div>
+        <div class="logo-text">HotelOS</div>
+        <div class="logo-sub" style="color:var(--green);">Guest Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-link active" onclick="gNav('g-home')"><span class="nav-icon">🏠</span> My Stay</button>
+      <button class="nav-link" onclick="gNav('g-order')"><span class="nav-icon">🍽️</span> Room Service</button>
+      <button class="nav-link" onclick="gNav('g-issue')"><span class="nav-icon">🔧</span> Report Issue</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="font-size:.74rem;color:var(--text-3);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="guest-email"></div>
+      <button onclick="logout()" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-title">Welcome, <span id="guest-name" style="color:var(--accent);"></span></div>
+    </header>
+    <main class="content">
+
+      <!-- MY STAY -->
+      <div id="g-home" class="section active">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:14px;">My Bookings</h2>
+        <div id="guest-booking-card" class="card" style="padding:24px;color:var(--text-3);text-align:center;">Loading…</div>
+        <h2 style="font-size:1.1rem;font-weight:700;margin:22px 0 14px;">My Orders</h2>
+        <div class="card">
+          <table>
+            <thead><tr><th>Order</th><th>Items</th><th>Total</th><th>Status</th><th>Time</th></tr></thead>
+            <tbody id="guest-orders-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:24px;">No orders yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ORDER FOOD -->
+      <div id="g-order" class="section">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:14px;">Order Room Service</h2>
+        <div class="card" style="max-width:480px;">
+          <div style="padding:22px;">
+            <form onsubmit="guestOrder(event)" style="display:flex;flex-direction:column;gap:14px;">
+              <div><label>Item Name</label><input name="item_name" placeholder="Club Sandwich" required/></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div><label>Quantity</label><input name="quantity" type="number" min="1" value="1" required/></div>
+                <div><label>Price ($)</label><input name="price" type="number" step="0.01" min="0" placeholder="12.50" required/></div>
+              </div>
+              <div><label>Special Requests</label><input name="special_requests" placeholder="No onions, extra sauce…"/></div>
+              <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Place Order</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORT ISSUE -->
+      <div id="g-issue" class="section">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:14px;">Report a Maintenance Issue</h2>
+        <div class="card" style="max-width:480px;">
+          <div style="padding:22px;">
+            <form onsubmit="guestReportIssue(event)" style="display:flex;flex-direction:column;gap:14px;">
+              <div><label>Description</label><input name="description" placeholder="AC not working" required/></div>
+              <div><label>Priority</label>
+                <select name="priority" required>
+                  <option value="low">Low</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-warning" style="width:100%;justify-content:center;">Submit Report</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MODALS ═══════════════════════ -->
+
+<!-- Add Guest -->
+<div id="modal-guest" class="modal-bg">
+  <div class="modal">
+    <div class="card-head"><h3>Register Guest</h3><button onclick="closeModal('modal-guest')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="addGuest(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label>First Name</label><input name="first_name" required placeholder="John"/></div>
+        <div><label>Last Name</label><input name="last_name" required placeholder="Doe"/></div>
+      </div>
+      <div><label>Email</label><input type="email" name="email" required placeholder="john@example.com"/></div>
+      <div><label>Phone</label><input name="phone" placeholder="+1 555 0100"/></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+        <button type="button" onclick="closeModal('modal-guest')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-primary">Register</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Check-in -->
+<div id="modal-checkin" class="modal-bg">
+  <div class="modal">
+    <div class="card-head"><h3>Guest Check-In</h3><button onclick="closeModal('modal-checkin')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="doCheckIn(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <div><label>Guest ID</label><input type="number" name="guest_id" min="1" required placeholder="1"/></div>
+      <div><label>Room Type</label>
+        <select name="room_type" required>
+          <option value="">— Select —</option>
+          <option value="single">Single ($50/night)</option>
+          <option value="double">Double ($75/night)</option>
+          <option value="suite">Suite ($120/night)</option>
+          <option value="accessible">Accessible ($85/night)</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label>Check-in Date</label><input type="date" name="check_in_date" required/></div>
+        <div><label>Check-out Date</label><input type="date" name="check_out_date" required/></div>
+      </div>
+      <div><label>Preferred Floor (optional)</label><input type="number" name="preferred_floor" placeholder="1 or 2" min="1" max="2"/></div>
+      <div><label>Special Requests</label><input name="special_requests" placeholder="Late check-in, quiet room…"/></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+        <button type="button" onclick="closeModal('modal-checkin')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-success">Confirm Check-In</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Check-out -->
+<div id="modal-checkout" class="modal-bg">
+  <div class="modal">
+    <div class="card-head"><h3>Guest Check-Out</h3><button onclick="closeModal('modal-checkout')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="doCheckOut(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <div><label>Booking ID</label><input type="number" name="booking_id" min="1" required placeholder="1"/></div>
+      <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="3"/></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+        <button type="button" onclick="closeModal('modal-checkout')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-danger">Confirm Check-Out</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Place Order (staff) -->
+<div id="modal-order" class="modal-bg">
+  <div class="modal">
+    <div class="card-head"><h3>Place Room Service Order</h3><button onclick="closeModal('modal-order')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="placeOrder(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="3"/></div>
+      <div><label>Item Name</label><input name="item_name" required placeholder="Club Sandwich"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label>Quantity</label><input type="number" name="quantity" min="1" value="1" required/></div>
+        <div><label>Price ($)</label><input type="number" name="price" step="0.01" min="0" required placeholder="12.50"/></div>
+      </div>
+      <div><label>Special Requests</label><input name="special_requests" placeholder="No onions…"/></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+        <button type="button" onclick="closeModal('modal-order')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-primary">Place Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Report Issue -->
+<div id="modal-issue" class="modal-bg">
+  <div class="modal">
+    <div class="card-head"><h3>Report Maintenance Issue</h3><button onclick="closeModal('modal-issue')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="reportIssue(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <div><label>Room ID</label><input type="number" name="room_id" min="1" required placeholder="5"/></div>
+      <div><label>Description</label><input name="description" required placeholder="AC not working"/></div>
+      <div><label>Priority</label>
+        <select name="priority" required>
+          <option value="low">Low</option>
+          <option value="normal" selected>Normal</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+      <div><label>Reported By</label><input name="reported_by" placeholder="Front desk"/></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+        <button type="button" onclick="closeModal('modal-issue')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-warning">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Staff -->
+<div id="modal-staff" class="modal-bg">
+  <div class="modal">
+    <div class="card-head"><h3>Create Staff Account</h3><button onclick="closeModal('modal-staff')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <form onsubmit="addStaff(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <div><label>Full Name</label><input name="full_name" required placeholder="Staff Member"/></div>
+      <div><label>Email</label><input type="email" name="email" required placeholder="staff@hotel.com"/></div>
+      <div><label>Password</label><input type="password" name="password" required minlength="6" placeholder="Min 6 chars"/></div>
+      <div><label>Role</label>
+        <select name="role" required>
+          <option value="reception">Reception</option>
+          <option value="housekeeping">Housekeeping</option>
+          <option value="room_service">Room Service</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+        <button type="button" onclick="closeModal('modal-staff')" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Room Detail -->
+<div id="modal-room" class="modal-bg">
+  <div class="modal">
+    <div class="card-head"><h3 id="room-modal-title">Room Details</h3><button onclick="closeModal('modal-room')" style="background:none;border:none;font-size:1.2rem;color:var(--text-3);cursor:pointer;">✕</button></div>
+    <div style="padding:20px;" id="room-modal-body"></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="script.js"></script>
+</body>
+</html>

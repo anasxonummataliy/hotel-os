@@ -90,6 +90,19 @@ async def create_order(order: OrderCreate, current: dict = Depends(any_authentic
     return OrderResponse(**created)
 
 
+@app.get("/orders")
+async def get_all_orders(
+    current: dict = Depends(require_roles("admin", "room_service", "reception")),
+):
+    """Return all orders — used by kitchen display and dashboard."""
+    from sqlalchemy import select as _select
+    from app.db.engine import get_session as _gs
+    from app.db.models import Order as _Order
+    with _gs() as s:
+        rows = s.execute(_select(_Order).order_by(_Order.id.desc())).scalars().all()
+        return [r.to_dict() for r in rows]
+
+
 @app.get("/orders/room/{room_id}")
 async def get_room_orders(room_id: int, current: dict = Depends(any_authenticated)):
     if current["role"] == "guest":

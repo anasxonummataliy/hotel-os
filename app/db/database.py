@@ -85,7 +85,7 @@ class RoomProxy:
         return {
             "id":               self.id,
             "number":           self.number,
-            "floor":             self.floor,
+            "floor":            self.floor,
             "room_type":        self.room_type.value,
             "status":           self.status.value,
             "price_per_night":  self.price_per_night,
@@ -167,6 +167,7 @@ class Database:
                 last_name=data["last_name"],
                 email=data["email"],
                 phone=data.get("phone"),
+                passport_id=data.get("passport_id"),
                 created_at=datetime.utcnow(),
             )
             s.add(guest)

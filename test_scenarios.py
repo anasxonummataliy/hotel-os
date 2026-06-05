@@ -309,18 +309,102 @@ def test_ts06_concurrent_checkin():
         print(f"✗ ERROR: {e}")
 
 
-def test_ts07_websocket_realtime():
+def test_ts07_no_rooms_available():
     """
-    TS-07: WebSocket Real-Time Dashboard
-    Verify dashboard receives live updates
+    TS-07: No Rooms Available of Requested Type
+    Verify system returns clear 'no rooms available' message with alternative suggestions
     """
     print("\n" + "=" * 60)
-    print("TEST TS-07: WebSocket Real-Time Updates")
+    print("TEST TS-07: No Rooms Available — Alternative Suggestion")
     print("=" * 60)
 
-    print("Open browser to http://localhost:8005/")
-    print("Watch for real-time updates as events occur")
-    print("✓ Dashboard accessible and receiving events")
+    # Mark ALL suite rooms occupied first by checking in to them
+    # Then try to check in another guest needing a suite
+    check_in_data = {
+        "guest_id": 1,
+        "room_type": "suite",
+        "check_in_date": date.today().isoformat(),
+        "check_out_date": (date.today() + timedelta(days=2)).isoformat(),
+    }
+
+    # Fill all suites (rooms 105 and 204 are suites in seed data)
+    suite_bookings = []
+    for _ in range(3):  # attempt more than available suites
+        try:
+            response = client.post(
+                f"{BASE_URL}:{RECEPTION_PORT}/check-in",
+                json=check_in_data,
+                headers=headers(),
+            )
+            if response.status_code == 200:
+                suite_bookings.append(response.json()["booking_id"])
+                print(f"  ✓ Suite allocated: Room {response.json()['room_number']}")
+            elif response.status_code == 409:
+                data = response.json()
+                detail = data.get("detail", data)
+                if isinstance(detail, dict):
+                    print(f"  ✓ No suites left — detail: {detail.get('detail')}")
+                    print(f"  ✓ Available alternatives: {detail.get('available_types', [])}")
+                    print(f"  ✓ Suggestion: {detail.get('suggestion', '')}")
+                else:
+                    print(f"  ✓ 409 received: {detail}")
+                print("✓ PASSED: System returned clear unavailability message with alternatives")
+                break
+        except Exception as e:
+            print(f"✗ ERROR: {e}")
+            break
+
+
+def test_ts08_invalid_room_input():
+    """
+    TS-08: Invalid Room Number / Input Validation
+    Verify system rejects invalid inputs gracefully without crashing
+    """
+    print("\n" + "=" * 60)
+    print("TEST TS-08: Input Validation & Error Handling")
+    print("=" * 60)
+
+    # Invalid room_id (999 doesn't exist)
+    invalid_check_in = {
+        "guest_id": 999999,  # non-existent guest
+        "room_type": "double",
+        "check_in_date": date.today().isoformat(),
+        "check_out_date": (date.today() + timedelta(days=1)).isoformat(),
+    }
+
+    try:
+        response = client.post(
+            f"{BASE_URL}:{RECEPTION_PORT}/check-in",
+            json=invalid_check_in,
+            headers=headers(),
+        )
+        if response.status_code == 404:
+            print(f"  ✓ Non-existent guest rejected: {response.status_code}")
+            print(f"  ✓ Error message: {response.json().get('detail')}")
+            print("✓ PASSED: Input validation works — system stable")
+        else:
+            print(f"  Status: {response.status_code} — {response.text}")
+
+        # Invalid room type
+        bad_type_check_in = {
+            "guest_id": 1,
+            "room_type": "penthouse",  # not a valid enum
+            "check_in_date": date.today().isoformat(),
+            "check_out_date": (date.today() + timedelta(days=1)).isoformat(),
+        }
+        response2 = client.post(
+            f"{BASE_URL}:{RECEPTION_PORT}/check-in",
+            json=bad_type_check_in,
+            headers=headers(),
+        )
+        if response2.status_code == 422:
+            print(f"  ✓ Invalid room type rejected: {response2.status_code}")
+            print("✓ PASSED: Enum validation catches invalid room types")
+        else:
+            print(f"  Invalid type status: {response2.status_code}")
+
+    except Exception as e:
+        print(f"✗ ERROR: {e}")
 
 
 def run_all_tests():
@@ -340,7 +424,8 @@ def run_all_tests():
         test_ts04_room_service_integration()
         test_ts05_maintenance_priority_queue()
         test_ts06_concurrent_checkin()
-        test_ts07_websocket_realtime()
+        test_ts07_no_rooms_available()
+        test_ts08_invalid_room_input()
 
         print("\n" + "=" * 80)
         print("TEST SUITE COMPLETED")

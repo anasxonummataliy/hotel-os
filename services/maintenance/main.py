@@ -87,6 +87,17 @@ app = FastAPI(title="Maintenance Service", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
+@app.get("/maintenance/tickets")
+async def list_tickets(current: dict = Depends(any_authenticated)):
+    """List all maintenance issues — alias for dashboard/frontend compatibility."""
+    from sqlalchemy import select as _select
+    from app.db.engine import get_session as _gs
+    from app.db.models import MaintenanceIssue as _MI
+    with _gs() as s:
+        rows = s.execute(_select(_MI).order_by(_MI.id.desc())).scalars().all()
+        return [r.to_dict() for r in rows]
+
+
 @app.get("/maintenance/queue")
 async def get_queue(current: dict = Depends(require_roles("admin", "maintenance", "reception"))):
     items = []
