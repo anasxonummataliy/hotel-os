@@ -12,20 +12,20 @@ import { useState, type FormEvent } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: 'System Admin',
-  reception: 'Reception',
-  housekeeping: 'Housekeeping',
-  room_service: 'Room Service',
-  maintenance: 'Maintenance',
-  guest: 'Guest',
+  admin: 'Tizim administratori',
+  reception: 'Qabulxona',
+  housekeeping: 'Xona tozalash',
+  room_service: 'Xona xizmati',
+  maintenance: 'Texnik xizmat',
+  guest: 'Mehmon',
 };
 
 const QUICK_LOGINS = [
   { label: 'Admin', username: 'admin@hotel.com', password: 'admin123' },
-  { label: 'Reception', username: 'reception@hotel.com', password: 'staff123' },
-  { label: 'Housekeeping', username: 'housekeeping@hotel.com', password: 'staff123' },
-  { label: 'Room Service', username: 'roomservice@hotel.com', password: 'staff123' },
-  { label: 'Maintenance', username: 'maintenance@hotel.com', password: 'staff123' },
+  { label: 'Qabulxona', username: 'reception@hotel.com', password: 'staff123' },
+  { label: 'Tozalash', username: 'housekeeping@hotel.com', password: 'staff123' },
+  { label: 'Xona xizmati', username: 'roomservice@hotel.com', password: 'staff123' },
+  { label: 'Texnik xizmat', username: 'maintenance@hotel.com', password: 'staff123' },
 ];
 
 export function LoginPage() {
@@ -38,7 +38,7 @@ export function LoginPage() {
     e.preventDefault();
     setLocalError(null);
     if (!username.trim() || !password.trim()) {
-      setLocalError('Please enter both username and password.');
+      setLocalError('Iltimos, foydalanuvchi nomi va parolni kiriting.');
       return;
     }
     try {
@@ -82,7 +82,7 @@ export function LoginPage() {
             HotelOS
           </h1>
           <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>
-            GrandStay Hotel Management System
+            GrandStay Mehmonxona Boshqaruv Tizimi
           </p>
         </div>
 
@@ -92,18 +92,18 @@ export function LoginPage() {
           border: '1px solid #334155', padding: '28px 28px 24px',
         }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#f8fafc', margin: '0 0 22px' }}>
-            Sign in to your account
+            Hisobingizga kiring
           </h2>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <label style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 6 }}>
-                Email or Username
+                Email yoki foydalanuvchi nomi
               </label>
               <input
                 type="text"
                 autoComplete="username"
-                placeholder="e.g. admin@hotel.com"
+                placeholder="masalan, admin@hotel.com"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 style={{
@@ -116,7 +116,7 @@ export function LoginPage() {
 
             <div>
               <label style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 6 }}>
-                Password
+                Parol
               </label>
               <input
                 type="password"
@@ -154,7 +154,7 @@ export function LoginPage() {
                 opacity: loading ? 0.8 : 1,
               }}
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'Kirilmoqda…' : 'Kirish'}
             </button>
           </form>
         </div>
@@ -162,7 +162,7 @@ export function LoginPage() {
         {/* Quick-login shortcuts (development / demo convenience) */}
         <div style={{ marginTop: 20 }}>
           <p style={{ fontSize: 11, color: '#475569', textAlign: 'center', marginBottom: 10 }}>
-            Quick login (demo)
+            Tez kirish (demo)
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
             {QUICK_LOGINS.map(({ label, username: u, password: p }) => (

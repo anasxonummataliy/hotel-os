@@ -9,13 +9,13 @@ interface HeaderProps {
 }
 
 const viewLabels: Record<string, string> = {
-  dashboard: 'Overview Dashboard',
-  reception: 'Reception Desk',
-  housekeeping: 'Housekeeping',
-  kitchen: 'Kitchen Display System',
-  maintenance: 'Maintenance',
-  analytics: 'Analytics',
-  settings: 'Settings',
+  dashboard: 'Boshqaruv paneli',
+  reception: 'Qabulxona',
+  housekeeping: 'Xona tozalash',
+  kitchen: 'Oshxona displeyi',
+  maintenance: 'Texnik xizmat',
+  analytics: 'Statistika',
+  settings: 'Sozlamalar',
 };
 
 export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
@@ -26,8 +26,8 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
   const [notifications, setNotifications] = useState<{ id: number; msg: string; time: Date }[]>([]);
 
   // Derive initials and display name from real user
-  const displayName = user?.full_name ?? 'Hotel Staff';
-  const role = user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1).replace('_', ' ')) : 'Staff';
+  const displayName = user?.full_name ?? 'Mehmonxona xodimi';
+  const role = user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1).replace('_', ' ')) : 'Xodim';
   const initials = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   useEffect(() => {
@@ -43,14 +43,14 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
         const msg = JSON.parse(e.data);
         if (msg.event_type === 'dashboard_init') return;
         const labels: Record<string, string> = {
-          check_in_completed: '🛎️ New check-in',
-          room_vacated: '🚪 Room vacated',
-          room_cleaned: '✨ Room cleaned',
-          order_status_changed: '🍽️ Order update',
-          maintenance_updated: '🔧 Maintenance update',
+          check_in_completed: '🛎️ Yangi mehmon kirishi',
+          room_vacated: '🚪 Xona bo\'shadi',
+          room_cleaned: '✨ Xona tozalandi',
+          order_status_changed: '🍽️ Buyurtma yangilandi',
+          maintenance_updated: '🔧 Texnik xizmat yangilandi',
         };
         const label = labels[msg.event_type] || msg.event_type.replace(/_/g, ' ');
-        const detail = msg.data?.room_number ? ` — Room ${msg.data.room_number}` : '';
+        const detail = msg.data?.room_number ? ` — Xona ${msg.data.room_number}` : '';
         setNotifications(prev => [
           { id: Date.now(), msg: `${label}${detail}`, time: new Date() },
           ...prev,
@@ -61,8 +61,8 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
     return () => ws.close();
   }, []);
 
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = now.toLocaleDateString('uz-UZ', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   return (
     <header
@@ -95,7 +95,7 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
             }} />
             <span style={{ position: 'relative', borderRadius: '50%', width: 10, height: 10, backgroundColor: '#22c55e' }} />
           </span>
-          <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 500 }}>Live Connection</span>
+          <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 500 }}>Jonli ulanish</span>
         </div>
 
         {/* Date & Time */}
@@ -134,24 +134,24 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
               width: 300, maxHeight: 360, zIndex: 50, overflow: 'hidden',
             }}>
               <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Notifications</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Bildirishnomalar</span>
                 {notifications.length > 0 && (
                   <button onClick={() => setNotifications([])} style={{ fontSize: 11, color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer' }}>
-                    Clear all
+                    Hammasini tozalash
                   </button>
                 )}
               </div>
               <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                 {notifications.length === 0 ? (
                   <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>
-                    No new notifications
+                    Yangi bildirishnomalar yo'q
                   </div>
                 ) : (
                   notifications.map(n => (
                     <div key={n.id} style={{ padding: '10px 16px', borderBottom: '1px solid #f1f5f9', fontSize: 12, color: '#374151' }}>
                       <p style={{ margin: '0 0 2px' }}>{n.msg}</p>
                       <p style={{ margin: 0, fontSize: 10, color: '#94a3b8' }}>
-                        {n.time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        {n.time.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   ))
@@ -191,8 +191,8 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
               minWidth: 180, zIndex: 50, overflow: 'hidden',
             }}>
               {[
-                { icon: User, label: 'My Profile', action: () => onNavigate?.('settings') },
-                { icon: LogOut, label: 'Sign Out', action: onLogout },
+                { icon: User, label: 'Mening profilim', action: () => onNavigate?.('settings') },
+                { icon: LogOut, label: 'Chiqish', action: onLogout },
               ].map(({ icon: Icon, label, action }) => (
                 <button
                   key={label}

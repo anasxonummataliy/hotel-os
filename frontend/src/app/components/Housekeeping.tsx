@@ -22,8 +22,8 @@ interface Props {
 function elapsed(dateStr: string | null): string {
   if (!dateStr) return '—';
   const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  return `${Math.floor(mins / 60)}h ${mins % 60}m ago`;
+  if (mins < 60) return `${mins} daq. oldin`;
+  return `${Math.floor(mins / 60)} soat ${mins % 60} daq. oldin`;
 }
 
 const HK_STATUSES = ['dirty', 'cleaning', 'clean'] as const;
@@ -42,11 +42,11 @@ function RoomKanbanCard({
       borderRadius: 10, padding: 14, marginBottom: 10,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#1e293b' }}>Room {room.number}</span>
+        <span style={{ fontSize: 18, fontWeight: 700, color: '#1e293b' }}>Xona {room.number}</span>
         <span style={{
           fontSize: 11, color: '#64748b', backgroundColor: '#f1f5f9',
           padding: '2px 7px', borderRadius: 20,
-        }}>Floor {room.floor}</span>
+        }}>{room.floor}-qavat</span>
       </div>
 
       {room.status !== 'clean' && (
@@ -62,9 +62,9 @@ function RoomKanbanCard({
           }}
         >
           {room.status === 'dirty' ? (
-            <><ArrowRight size={13} /> Set to Cleaning</>
+            <><ArrowRight size={13} /> Tozalashni boshlash</>
           ) : (
-            <><CheckCircle size={13} /> Mark as Clean</>
+            <><CheckCircle size={13} /> Toza deb belgilash</>
           )}
         </button>
       )}
@@ -74,7 +74,7 @@ function RoomKanbanCard({
           fontSize: 12, fontWeight: 600, color: '#16a34a', backgroundColor: '#f0fdf4',
           border: '1px solid #bbf7d0', borderRadius: 7, padding: '6px',
         }}>
-          <CheckCircle size={13} /> Inspected & Clean
+          <CheckCircle size={13} /> Tekshirilgan va Toza
         </span>
       )}
     </div>
@@ -102,7 +102,7 @@ export function Housekeeping({ onStatusChange }: Props) {
         }));
       setRooms(hkRooms);
     } catch (e) {
-      setError('Failed to load rooms from backend.');
+      setError('Xonalarni serverdan yuklashda xatolik.');
     } finally {
       setLoading(false);
     }
@@ -124,7 +124,7 @@ export function Housekeeping({ onStatusChange }: Props) {
         onStatusChange?.(); // notify App.tsx so Dashboard updates
       }
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Action failed');
+      alert(err instanceof Error ? err.message : 'Amal bajarilmadi');
       await load(); // re-sync on error
     } finally {
       setAdvancing(null);
@@ -132,15 +132,15 @@ export function Housekeeping({ onStatusChange }: Props) {
   }, [rooms, onStatusChange, load]);
 
   const columnDef = [
-    { key: 'dirty',   label: 'Pending Cleaning', color: '#d97706', bg: '#fffbeb' },
-    { key: 'cleaning', label: 'In Progress',      color: '#2563eb', bg: '#eff6ff' },
-    { key: 'clean',   label: 'Inspected & Clean', color: '#16a34a', bg: '#f0fdf4' },
+    { key: 'dirty',   label: 'Tozalash kutilmoqda', color: '#d97706', bg: '#fffbeb' },
+    { key: 'cleaning', label: 'Jarayonda',      color: '#2563eb', bg: '#eff6ff' },
+    { key: 'clean',   label: 'Tekshirilgan va Toza', color: '#16a34a', bg: '#f0fdf4' },
   ] as const;
 
   if (loading) {
     return (
       <div style={{ padding: 24, color: '#94a3b8', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
-        Loading housekeeping data…
+        Tozalash ma'lumotlari yuklanmoqda…
       </div>
     );
   }
@@ -149,8 +149,8 @@ export function Housekeeping({ onStatusChange }: Props) {
     <div style={{ padding: 24, fontFamily: 'Inter, sans-serif', flex: 1, overflowY: 'auto' }}>
       <div style={{ marginBottom: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: '0 0 4px' }}>Housekeeping Board</h2>
-          <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>Live data from backend — click to advance room status</p>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: '0 0 4px' }}>Tozalash paneli</h2>
+          <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>Serverdan jonli ma'lumotlar — holatni o'zgartirish uchun bosing</p>
         </div>
         <button
           onClick={load}
@@ -160,7 +160,7 @@ export function Housekeeping({ onStatusChange }: Props) {
             fontSize: 12, color: '#64748b', cursor: 'pointer',
           }}
         >
-          <RefreshCw size={13} /> Refresh
+          <RefreshCw size={13} /> Yangilash
         </button>
       </div>
 
@@ -192,7 +192,7 @@ export function Housekeeping({ onStatusChange }: Props) {
               }}>
                 {colRooms.length === 0 && (
                   <div style={{ textAlign: 'center', padding: '30px 0', color: '#cbd5e1', fontSize: 12 }}>
-                    No rooms in this stage
+                    Bu bosqichda xonalar yo'q
                   </div>
                 )}
                 {colRooms.map(room => (

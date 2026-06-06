@@ -11,10 +11,10 @@ const STATUS_STEPS = ['received', 'preparing', 'in_delivery', 'delivered'] as co
 type OrderStatus = typeof STATUS_STEPS[number];
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; bg: string }> = {
-  received:    { label: 'Received',    color: '#7c3aed', bg: '#f5f3ff' },
-  preparing:   { label: 'Preparing',   color: '#d97706', bg: '#fffbeb' },
-  in_delivery: { label: 'In Delivery', color: '#2563eb', bg: '#eff6ff' },
-  delivered:   { label: 'Delivered',   color: '#16a34a', bg: '#f0fdf4' },
+  received:    { label: 'Qabul qilindi',    color: '#7c3aed', bg: '#f5f3ff' },
+  preparing:   { label: 'Tayyorlanmoqda',   color: '#d97706', bg: '#fffbeb' },
+  in_delivery: { label: 'Yetkazilmoqda', color: '#2563eb', bg: '#eff6ff' },
+  delivered:   { label: 'Yetkazildi',   color: '#16a34a', bg: '#f0fdf4' },
 };
 
 function useElapsed(isoString: string) {
@@ -51,7 +51,7 @@ function OrderCard({
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Room</p>
+          <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Xona</p>
           <span style={{ fontSize: 26, fontWeight: 800, color: '#1e293b', letterSpacing: '-1px' }}>
             {order.room_id}
           </span>
@@ -60,7 +60,7 @@ function OrderCard({
           <span style={{ fontSize: 10, color: '#94a3b8', display: 'block' }}>#{order.id}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4, color: isDelayed ? '#ef4444' : '#64748b' }}>
             <Clock size={12} />
-            <span style={{ fontSize: 12, fontWeight: 600 }}>{elapsed} min{elapsed !== 1 ? 's' : ''}</span>
+            <span style={{ fontSize: 12, fontWeight: 600 }}>{elapsed} daq.</span>
           </div>
         </div>
       </div>
@@ -158,7 +158,7 @@ export function KitchenDisplay() {
         prev.map(o => o.id === orderId ? { ...o, status: nextStatus } : o),
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update order');
+      alert(err instanceof Error ? err.message : 'Buyurtmani yangilash muvaffaqiyatsiz');
       await load();
     } finally {
       setAdvancing(null);
@@ -173,7 +173,7 @@ export function KitchenDisplay() {
   if (loading) {
     return (
       <div style={{ backgroundColor: '#f8fafc', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
-        Loading orders…
+        Buyurtmalar yuklanmoqda…
       </div>
     );
   }
@@ -187,25 +187,25 @@ export function KitchenDisplay() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3b82f6' }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6' }}>{active.length} Active Orders</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6' }}>{active.length} Faol buyurtmalar</span>
         </div>
         {delayed.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <AlertTriangle size={14} style={{ color: '#ef4444' }} />
             <span style={{ fontSize: 13, fontWeight: 700, color: '#ef4444' }}>
-              {delayed.length} Delayed Order{delayed.length !== 1 ? 's' : ''}
+              {delayed.length} Kechikkan buyurtma{delayed.length !== 1 ? 'lar' : ''}
             </span>
           </div>
         )}
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: 12, color: '#64748b' }}>
-          {orders.filter(o => o.status === 'delivered').length} delivered today
+          {orders.filter(o => o.status === 'delivered').length} bugun yetkazildi
         </span>
         <button
           onClick={load}
           style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 8, padding: '5px 10px', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11 }}
         >
-          <RefreshCw size={12} /> Refresh
+          <RefreshCw size={12} /> Yangilash
         </button>
       </div>
 
@@ -223,8 +223,8 @@ export function KitchenDisplay() {
         </div>
         {orders.length === 0 && (
           <div style={{ textAlign: 'center', padding: 80, color: '#94a3b8' }}>
-            <p style={{ fontSize: 16, fontWeight: 600 }}>No orders yet</p>
-            <p style={{ fontSize: 13 }}>Room service orders will appear here in real time.</p>
+            <p style={{ fontSize: 16, fontWeight: 600 }}>Hozircha buyurtmalar yo'q</p>
+            <p style={{ fontSize: 13 }}>Xona xizmati buyurtmalari bu yerda real vaqtda ko'rinadi.</p>
           </div>
         )}
       </div>

@@ -86,7 +86,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
 
   const handleSubmit = () => {
     if (!form.guestId) {
-      toast.error('Please select a guest from the list');
+      toast.error('Iltimos, ro\'yxatdan mehmonni tanlang');
       return;
     }
     onCheckIn(form);
@@ -110,10 +110,10 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
       {/* Metrics + Register Guest button */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-          <MetricCard icon={Users} label="Occupied Rooms" value={occupied.length} color="#2563eb" bg="#eff6ff" />
-          <MetricCard icon={BedDouble} label="Available Clean" value={available.length} color="#16a34a" bg="#f0fdf4" />
-          <MetricCard icon={CalendarCheck} label="Dirty / Cleaning" value={dirty.length} color="#d97706" bg="#fffbeb" />
-          <MetricCard icon={CalendarX} label="Maintenance" value={maintenance.length} color="#dc2626" bg="#fef2f2" />
+          <MetricCard icon={Users} label="Band xonalar" value={occupied.length} color="#2563eb" bg="#eff6ff" />
+          <MetricCard icon={BedDouble} label="Bo'sh va toza" value={available.length} color="#16a34a" bg="#f0fdf4" />
+          <MetricCard icon={CalendarCheck} label="Iflos / Tozalanmoqda" value={dirty.length} color="#d97706" bg="#fffbeb" />
+          <MetricCard icon={CalendarX} label="Ta'mirda" value={maintenance.length} color="#dc2626" bg="#fef2f2" />
         </div>
         <button
           onClick={() => setShowGuestRegister(true)}
@@ -124,7 +124,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
             cursor: 'pointer', height: 'fit-content',
           }}
         >
-          <UserPlus size={14} /> Register Guest
+          <UserPlus size={14} /> Mehmon ro'yxatdan o'tkazish
         </button>
       </div>
 
@@ -136,8 +136,8 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', margin: 0 }}>Active Bookings</h3>
-              <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{occupied.length} guests currently checked in</p>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', margin: 0 }}>Faol joylashishlar</h3>
+              <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{occupied.length} mehmon hozirda joylashgan</p>
             </div>
             <button
               onClick={() => setShowForm(v => !v)}
@@ -149,7 +149,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
               }}
             >
               <Plus size={14} />
-              New Check-In
+              Yangi mehmon kirishi
             </button>
           </div>
 
@@ -157,7 +157,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8fafc' }}>
-                  {['Room', 'Guest Name', 'Room Type', 'Check-In', 'Balance', 'Action'].map(h => (
+                  {['Xona', 'Mehmon ismi', 'Xona turi', 'Kirish sanasi', 'Balans', 'Amal'].map(h => (
                     <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
@@ -191,7 +191,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                           cursor: 'pointer', whiteSpace: 'nowrap',
                         }}
                       >
-                        <CreditCard size={12} /> Process Check-Out
+                        <CreditCard size={12} /> Chiqishni amalga oshirish
                       </button>
                     </td>
                   </tr>
@@ -209,7 +209,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               backgroundColor: '#1e293b',
             }}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#f8fafc', margin: 0 }}>New Guest Check-In</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#f8fafc', margin: 0 }}>Yangi mehmon kirishi</h3>
               <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
                 <X size={16} />
               </button>
@@ -218,12 +218,12 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
             <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
               {/* Guest Search — inline autocomplete like Telegram */}
               <div style={{ position: 'relative' }}>
-                <label style={labelStyle}>Guest *</label>
+                <label style={labelStyle}>Mehmon *</label>
                 <div style={{ position: 'relative' }}>
                   <Search size={14} style={{ position: 'absolute', left: 10, top: 11, color: '#94a3b8' }} />
                   <input
                     style={{ ...inputStyle, paddingLeft: 32 }}
-                    placeholder="Search by name, passport ID, or email…"
+                    placeholder="Ism, pasport ID yoki email bo'yicha qidirish…"
                     value={guestSearch}
                     onChange={e => {
                       setGuestSearch(e.target.value);
@@ -250,7 +250,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                   }}>
                     {filteredGuests.length === 0 ? (
                       <div style={{ padding: '12px 14px', color: '#94a3b8', fontSize: 12, textAlign: 'center' }}>
-                        No guests found. Register a new guest first.
+                        Mehmon topilmadi. Avval yangi mehmon ro'yxatdan o'tkazing.
                       </div>
                     ) : (
                       filteredGuests.map(g => (
@@ -289,11 +289,11 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                 )}
               </div>
               <div>
-                <label style={labelStyle}>Stay Duration (Nights)</label>
+                <label style={labelStyle}>Qolish muddati (kechalar)</label>
                 <input type="number" min={1} max={90} style={inputStyle} value={form.nights} onChange={e => setForm(f => ({ ...f, nights: Number(e.target.value) }))} />
               </div>
               <div>
-                <label style={labelStyle}>Room Type</label>
+                <label style={labelStyle}>Xona turi</label>
                 <select style={inputStyle} value={form.roomType} onChange={e => setForm(f => ({ ...f, roomType: e.target.value as CheckInData['roomType'] }))}>
                   {(['Single', 'Double', 'Luxury Suite', 'Accessible'] as const).map(t => (
                     <option key={t} value={t}>{t}</option>
@@ -301,7 +301,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                 </select>
               </div>
               <div>
-                <label style={labelStyle}>Floor Preference</label>
+                <label style={labelStyle}>Qavat afzalligi</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {(['any', 'low', 'high'] as const).map(opt => (
                     <button
@@ -316,7 +316,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                         cursor: 'pointer', textTransform: 'capitalize',
                       }}
                     >
-                      {opt === 'any' ? 'Any' : opt === 'low' ? 'Lower' : 'Upper'}
+                      {opt === 'any' ? 'Farqi yo\'q' : opt === 'low' ? 'Pastki' : 'Yuqori'}
                     </button>
                   ))}
                 </div>
@@ -324,8 +324,8 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', backgroundColor: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: '#1e293b', margin: 0 }}>Near Elevator / Stairs</p>
-                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Accessibility preference</p>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: '#1e293b', margin: 0 }}>Lift / Zinapoya yaqinida</p>
+                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Imkoniyati cheklangan shaxslar uchun</p>
                 </div>
                 <button
                   onClick={() => setForm(f => ({ ...f, nearElevator: !f.nearElevator }))}
@@ -352,7 +352,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                   cursor: 'pointer', marginTop: 4,
                 }}
               >
-                <Zap size={15} /> Auto-Assign Best Room
+                <Zap size={15} /> Eng yaxshi xonani avtomatik tanlash
               </button>
             </div>
           </div>
@@ -367,34 +367,34 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
         }}>
           <div style={{ backgroundColor: '#fff', borderRadius: 12, width: 420, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', margin: 0 }}>Process Check-Out — Room {checkoutRoom.number}</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', margin: 0 }}>Chiqishni amalga oshirish — Xona {checkoutRoom.number}</h3>
               <button onClick={() => setCheckoutRoom(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={18} /></button>
             </div>
             <div style={{ padding: '20px 22px' }}>
               <div style={{ backgroundColor: '#f8fafc', borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, color: '#64748b' }}>Guest</span>
+                  <span style={{ fontSize: 13, color: '#64748b' }}>Mehmon</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{checkoutRoom.guestName}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, color: '#64748b' }}>Room Type</span>
+                  <span style={{ fontSize: 13, color: '#64748b' }}>Xona turi</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{checkoutRoom.roomType}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, color: '#64748b' }}>Check-In Date</span>
+                  <span style={{ fontSize: 13, color: '#64748b' }}>Kirish sanasi</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{checkoutRoom.checkIn}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', paddingTop: 8, marginTop: 8 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Outstanding Balance</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Qoldiq balans</span>
                   <span style={{ fontSize: 14, fontWeight: 700, color: '#dc2626' }}>${checkoutRoom.balance?.toLocaleString()}</span>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={() => setCheckoutRoom(null)} style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', backgroundColor: '#fff', fontSize: 13, cursor: 'pointer', color: '#64748b' }}>
-                  Cancel
+                  Bekor qilish
                 </button>
                 <button onClick={() => { onCheckOut(checkoutRoom.id); setCheckoutRoom(null); }} style={{ flex: 2, padding: '10px', borderRadius: 8, border: 'none', backgroundColor: '#dc2626', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  <CreditCard size={14} /> Confirm Check-Out & Bill
+                  <CreditCard size={14} /> Chiqishni tasdiqlash va hisob
                 </button>
               </div>
             </div>
@@ -407,17 +407,17 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ backgroundColor: '#fff', borderRadius: 12, width: 440, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1e293b' }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#f8fafc', margin: 0 }}>Register New Guest</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#f8fafc', margin: 0 }}>Yangi mehmonni ro'yxatdan o'tkazish</h3>
               <button onClick={() => setShowGuestRegister(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={16} /></button>
             </div>
             <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label style={labelStyle}>First Name *</label>
+                  <label style={labelStyle}>Ism *</label>
                   <input style={inputStyle} value={guestForm.first_name} onChange={e => setGuestForm(f => ({ ...f, first_name: e.target.value }))} />
                 </div>
                 <div>
-                  <label style={labelStyle}>Last Name *</label>
+                  <label style={labelStyle}>Familiya *</label>
                   <input style={inputStyle} value={guestForm.last_name} onChange={e => setGuestForm(f => ({ ...f, last_name: e.target.value }))} />
                 </div>
               </div>
@@ -426,19 +426,19 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                 <input type="email" style={inputStyle} value={guestForm.email} onChange={e => setGuestForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
-                <label style={labelStyle}>Phone (optional)</label>
+                <label style={labelStyle}>Telefon (ixtiyoriy)</label>
                 <input style={inputStyle} value={guestForm.phone} onChange={e => setGuestForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
               <div>
-                <label style={labelStyle}>Passport / ID Number</label>
-                <input style={inputStyle} placeholder="e.g. AB1234567" value={guestForm.passport_id} onChange={e => setGuestForm(f => ({ ...f, passport_id: e.target.value }))} />
+                <label style={labelStyle}>Pasport / ID raqami</label>
+                <input style={inputStyle} placeholder="masalan, AB1234567" value={guestForm.passport_id} onChange={e => setGuestForm(f => ({ ...f, passport_id: e.target.value }))} />
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setShowGuestRegister(false)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', backgroundColor: '#fff', fontSize: 13, cursor: 'pointer', color: '#64748b' }}>Cancel</button>
+                <button onClick={() => setShowGuestRegister(false)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', backgroundColor: '#fff', fontSize: 13, cursor: 'pointer', color: '#64748b' }}>Bekor qilish</button>
                 <button
                   onClick={async () => {
                     if (!guestForm.first_name || !guestForm.last_name || !guestForm.email) {
-                      toast.error('Fill in all required fields'); return;
+                      toast.error('Barcha majburiy maydonlarni to\'ldiring'); return;
                     }
                     setRegistering(true);
                     try {
@@ -452,15 +452,15 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                       setCredentials(creds);
                       setShowGuestRegister(false);
                       setGuestForm({ first_name: '', last_name: '', email: '', phone: '', passport_id: '' });
-                      toast.success('Guest registered! Credentials generated.');
+                      toast.success('Mehmon ro\'yxatdan o\'tkazildi! Kirish ma\'lumotlari yaratildi.');
                     } catch (err: unknown) {
-                      toast.error(err instanceof Error ? err.message : 'Registration failed');
+                      toast.error(err instanceof Error ? err.message : 'Ro\'yxatdan o\'tkazish muvaffaqiyatsiz');
                     } finally { setRegistering(false); }
                   }}
                   disabled={registering}
                   style={{ flex: 2, padding: 10, borderRadius: 8, border: 'none', backgroundColor: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: registering ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                 >
-                  <UserPlus size={14} /> {registering ? 'Registering…' : 'Register & Generate Credentials'}
+                  <UserPlus size={14} /> {registering ? 'Ro\'yxatdan o\'tkazilmoqda…' : 'Ro\'yxatdan o\'tkazish'}
                 </button>
               </div>
             </div>
@@ -473,29 +473,29 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ backgroundColor: '#fff', borderRadius: 12, width: 440, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#16a34a' }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>🎉 Guest Account Created</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>🎉 Mehmon hisobi yaratildi</h3>
               <button onClick={() => setCredentials(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbf7d0' }}><X size={16} /></button>
             </div>
             <div style={{ padding: 20 }}>
               <p style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>
-                Give these credentials to the guest. The password is shown <strong>only once</strong>.
+                Bu kirish ma'lumotlarini mehmoningizga bering. Parol <strong>faqat bir marta</strong> ko'rsatiladi.
               </p>
               <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div>
-                    <p style={{ fontSize: 10, color: '#64748b', margin: '0 0 2px', textTransform: 'uppercase' }}>Guest Name</p>
+                    <p style={{ fontSize: 10, color: '#64748b', margin: '0 0 2px', textTransform: 'uppercase' }}>Mehmon ismi</p>
                     <p style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 }}>{credentials.full_name}</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 10, color: '#64748b', margin: '0 0 2px', textTransform: 'uppercase' }}>Guest ID</p>
+                    <p style={{ fontSize: 10, color: '#64748b', margin: '0 0 2px', textTransform: 'uppercase' }}>Mehmon ID</p>
                     <p style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 }}>#{credentials.guest_id}</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 10, color: '#64748b', margin: '0 0 2px', textTransform: 'uppercase' }}>Username</p>
+                    <p style={{ fontSize: 10, color: '#64748b', margin: '0 0 2px', textTransform: 'uppercase' }}>Foydalanuvchi nomi</p>
                     <p style={{ fontSize: 14, fontWeight: 700, color: '#2563eb', margin: 0, fontFamily: 'monospace' }}>{credentials.username}</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 10, color: '#64748b', margin: '0 0 2px', textTransform: 'uppercase' }}>Password</p>
+                    <p style={{ fontSize: 10, color: '#64748b', margin: '0 0 2px', textTransform: 'uppercase' }}>Parol</p>
                     <p style={{ fontSize: 14, fontWeight: 700, color: '#dc2626', margin: 0, fontFamily: 'monospace' }}>{credentials.password}</p>
                   </div>
                 </div>
@@ -506,21 +506,21 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                     const printContent = `
                       <div style="font-family:sans-serif;padding:20px;border:2px solid #000;max-width:300px;margin:auto;">
                         <h2 style="text-align:center;">🏨 HotelOS</h2>
-                        <p><strong>Name:</strong> ${credentials.full_name}</p>
-                        <p><strong>Username:</strong> ${credentials.username}</p>
-                        <p><strong>Password:</strong> ${credentials.password}</p>
+                        <p><strong>Ism:</strong> ${credentials.full_name}</p>
+                        <p><strong>Foydalanuvchi:</strong> ${credentials.username}</p>
+                        <p><strong>Parol:</strong> ${credentials.password}</p>
                         <hr/>
-                        <p style="font-size:11px;color:#666;">Login at the hotel kiosk or HotelOS app. Keep this card safe.</p>
+                        <p style="font-size:11px;color:#666;">Mehmonxona kioski yoki HotelOS ilovasiga kiring. Bu kartani saqlang.</p>
                       </div>`;
                     const w = window.open('', '_blank', 'width=400,height=400');
                     if (w) { w.document.write(printContent); w.document.close(); w.print(); }
                   }}
                   style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', backgroundColor: '#fff', fontSize: 13, cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                 >
-                  <Printer size={14} /> Print Card
+                  <Printer size={14} /> Kartani chop etish
                 </button>
                 <button onClick={() => setCredentials(null)} style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', backgroundColor: '#1e293b', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                  Done
+                  Tayyor
                 </button>
               </div>
             </div>

@@ -7,10 +7,10 @@ interface DashboardProps {
 }
 
 const statusConfig: Record<RoomStatus, { label: string; color: string; bg: string; border: string }> = {
-  available: { label: 'Clean / Available', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
-  occupied: { label: 'Occupied', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
-  dirty: { label: 'Needs Cleaning', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
-  maintenance: { label: 'Maintenance', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
+  available: { label: 'Toza / Bo\'sh', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
+  occupied: { label: 'Band', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
+  dirty: { label: 'Tozalash kerak', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+  maintenance: { label: 'Ta\'mirda', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
 };
 
 const statusIcons: Record<RoomStatus, React.ComponentType<{ size?: number }>> = {
@@ -55,7 +55,7 @@ function RoomCard({ room, onClick }: { room: Room; onClick: () => void }) {
 
       <div>
         <p style={{ fontSize: 12, fontWeight: 600, color: '#334155', margin: '0 0 4px' }}>
-          {room.guestName || 'Vacant'}
+          {room.guestName || 'Bo\'sh'}
         </p>
         <p style={{ fontSize: 10, color: '#94a3b8', margin: '0 0 8px' }}>{room.roomType}</p>
       </div>
@@ -83,10 +83,10 @@ export function Dashboard({ rooms, onRoomClick }: DashboardProps) {
   const totalMaintenance = rooms.filter(r => r.status === 'maintenance').length;
 
   const stats = [
-    { label: 'Occupied', value: totalOccupied, color: '#2563eb', bg: '#eff6ff', icon: Users },
-    { label: 'Available', value: totalAvailable, color: '#16a34a', bg: '#f0fdf4', icon: BedDouble },
-    { label: 'Needs Cleaning', value: totalDirty, color: '#d97706', bg: '#fffbeb', icon: AlertTriangle },
-    { label: 'Maintenance', value: totalMaintenance, color: '#dc2626', bg: '#fef2f2', icon: Wrench },
+    { label: 'Band', value: totalOccupied, color: '#2563eb', bg: '#eff6ff', icon: Users },
+    { label: 'Bo\'sh', value: totalAvailable, color: '#16a34a', bg: '#f0fdf4', icon: BedDouble },
+    { label: 'Tozalash kerak', value: totalDirty, color: '#d97706', bg: '#fffbeb', icon: AlertTriangle },
+    { label: 'Ta\'mirda', value: totalMaintenance, color: '#dc2626', bg: '#fef2f2', icon: Wrench },
   ];
 
   return (
@@ -129,7 +129,7 @@ export function Dashboard({ rooms, onRoomClick }: DashboardProps) {
             fontSize: 11, fontWeight: 700, color: '#1e293b', textTransform: 'uppercase',
             letterSpacing: '0.08em', backgroundColor: '#f1f5f9', borderRadius: 6,
             padding: '3px 10px',
-          }}>Floor 2</span>
+          }}>2-Qavat</span>
           <div style={{ flex: 1, height: 1, backgroundColor: '#e2e8f0' }} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 }}>
@@ -146,7 +146,7 @@ export function Dashboard({ rooms, onRoomClick }: DashboardProps) {
             fontSize: 11, fontWeight: 700, color: '#1e293b', textTransform: 'uppercase',
             letterSpacing: '0.08em', backgroundColor: '#f1f5f9', borderRadius: 6,
             padding: '3px 10px',
-          }}>Floor 1</span>
+          }}>1-Qavat</span>
           <div style={{ flex: 1, height: 1, backgroundColor: '#e2e8f0' }} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 }}>

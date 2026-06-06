@@ -88,8 +88,8 @@ export function GuestPortal() {
   useEffect(() => { loadData(); }, [loadData]);
 
   const handleOrder = async () => {
-    if (!booking) { toast.error('No active booking'); return; }
-    if (!itemName.trim()) { toast.error('Enter item name'); return; }
+    if (!booking) { toast.error('Faol joylashish topilmadi'); return; }
+    if (!itemName.trim()) { toast.error('Mahsulot nomini kiriting'); return; }
     setOrdering(true);
     try {
       const res = await authFetch(API_RS, {
@@ -100,19 +100,19 @@ export function GuestPortal() {
           special_requests: specialReq || null,
         }),
       });
-      toast.success(`Order #${res.id} placed! We'll bring it to your room.`);
+      toast.success(`Buyurtma #${res.id} qabul qilindi! Xonangizga yetkazamiz.`);
       setItemName(''); setQuantity(1); setPrice(10); setSpecialReq('');
       loadData();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Order failed');
+      toast.error(err instanceof Error ? err.message : 'Buyurtma muvaffaqiyatsiz');
     } finally {
       setOrdering(false);
     }
   };
 
   const handleReport = async () => {
-    if (!booking) { toast.error('No active booking'); return; }
-    if (!issueDesc.trim()) { toast.error('Enter issue description'); return; }
+    if (!booking) { toast.error('Faol joylashish topilmadi'); return; }
+    if (!issueDesc.trim()) { toast.error('Muammo tavsifini kiriting'); return; }
     setReporting(true);
     try {
       await authFetch(API_MAINT, {
@@ -121,13 +121,13 @@ export function GuestPortal() {
           room_id: booking.room_id,
           description: issueDesc,
           priority: issuePriority,
-          reported_by: user?.full_name ?? 'Guest',
+          reported_by: user?.full_name ?? 'Mehmon',
         }),
       });
-      toast.success('Issue reported. Our team will attend shortly.');
+      toast.success('Muammo xabar berildi. Jamoamiz tez orada keladi.');
       setIssueDesc(''); setIssuePriority('normal');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Report failed');
+      toast.error(err instanceof Error ? err.message : 'Xabar berish muvaffaqiyatsiz');
     } finally {
       setReporting(false);
     }
@@ -147,20 +147,20 @@ export function GuestPortal() {
           <span style={{ fontSize: 24 }}>🏨</span>
           <div>
             <h1 style={{ fontSize: 16, fontWeight: 700, color: '#f8fafc', margin: 0 }}>HotelOS</h1>
-            <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Guest Portal</p>
+            <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Mehmon portali</p>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 13, color: '#94a3b8' }}>Welcome, {user?.full_name}</span>
+          <span style={{ fontSize: 13, color: '#94a3b8' }}>Xush kelibsiz, {user?.full_name}</span>
           <button onClick={logout} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #475569', backgroundColor: 'transparent', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }}>
-            Sign Out
+            Chiqish
           </button>
         </div>
       </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #e2e8f0', backgroundColor: '#fff' }}>
-        {([['stay', '🏠 My Stay'], ['order', '🍽️ Room Service'], ['report', '🔧 Report Issue']] as const).map(([key, label]) => (
+        {([['stay', '🏠 Mening qolishim'], ['order', '🍽️ Xona xizmati'], ['report', '🔧 Muammo xabar berish']] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
@@ -178,48 +178,48 @@ export function GuestPortal() {
 
       {/* Content */}
       <div style={{ maxWidth: 640, margin: '24px auto', padding: '0 20px' }}>
-        {loading && <p style={{ color: '#94a3b8', textAlign: 'center' }}>Loading…</p>}
+        {loading && <p style={{ color: '#94a3b8', textAlign: 'center' }}>Yuklanmoqda…</p>}
 
         {/* ─── My Stay ─── */}
         {!loading && activeTab === 'stay' && (
           <div>
             {booking ? (
               <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 20, marginBottom: 20 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Current Stay</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Joriy qolish</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <div>
-                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 4px', textTransform: 'uppercase' }}>Room</p>
+                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 4px', textTransform: 'uppercase' }}>Xona</p>
                     <p style={{ fontSize: 24, fontWeight: 800, color: '#3b82f6', margin: 0 }}>#{booking.room_id}</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 4px', textTransform: 'uppercase' }}>Booking</p>
+                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 4px', textTransform: 'uppercase' }}>Band qilish</p>
                     <p style={{ fontSize: 24, fontWeight: 800, color: '#1e293b', margin: 0 }}>#{booking.id}</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 4px' }}>Check-in</p>
+                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 4px' }}>Kirish sanasi</p>
                     <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>{booking.check_in_date}</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 4px' }}>Check-out</p>
+                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 4px' }}>Chiqish sanasi</p>
                     <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>{booking.check_out_date}</p>
                   </div>
                 </div>
               </div>
             ) : (
               <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 32, textAlign: 'center', color: '#94a3b8' }}>
-                No active booking found. Please check in at reception.
+                Faol joylashish topilmadi. Iltimos, qabulxonada ro'yxatdan o'ting.
               </div>
             )}
 
             {orders.length > 0 && (
               <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
                 <div style={{ padding: '14px 18px', borderBottom: '1px solid #e2e8f0' }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 }}>My Orders</h3>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 }}>Mening buyurtmalarim</h3>
                 </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f8fafc' }}>
-                      {['Order', 'Items', 'Total', 'Status'].map(h => (
+                      {['Buyurtma', 'Mahsulotlar', 'Jami', 'Holat'].map(h => (
                         <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#64748b' }}>{h}</th>
                       ))}
                     </tr>
@@ -249,33 +249,33 @@ export function GuestPortal() {
         {/* ─── Room Service ─── */}
         {!loading && activeTab === 'order' && (
           <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Order Room Service</h3>
-            {!booking && <p style={{ color: '#dc2626', fontSize: 13 }}>You must be checked in to place orders.</p>}
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Xona xizmati buyurtmasi</h3>
+            {!booking && <p style={{ color: '#dc2626', fontSize: 13 }}>Buyurtma berish uchun avval ro'yxatdan o'tishingiz kerak.</p>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Item Name</label>
-                <input style={inputStyle} placeholder="e.g. Coffee, Sandwich…" value={itemName} onChange={e => setItemName(e.target.value)} />
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Mahsulot nomi</label>
+                <input style={inputStyle} placeholder="masalan, Qahva, Sendvich…" value={itemName} onChange={e => setItemName(e.target.value)} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Quantity</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Miqdor</label>
                   <input type="number" min={1} style={inputStyle} value={quantity} onChange={e => setQuantity(+e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Price ($)</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Narx ($)</label>
                   <input type="number" min={1} step={0.5} style={inputStyle} value={price} onChange={e => setPrice(+e.target.value)} />
                 </div>
               </div>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Special Requests</label>
-                <input style={inputStyle} placeholder="Optional…" value={specialReq} onChange={e => setSpecialReq(e.target.value)} />
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Maxsus so'rovlar</label>
+                <input style={inputStyle} placeholder="Ixtiyoriy…" value={specialReq} onChange={e => setSpecialReq(e.target.value)} />
               </div>
               <button
                 onClick={handleOrder}
                 disabled={ordering || !booking}
                 style={{ padding: '11px', borderRadius: 8, border: 'none', backgroundColor: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: ordering ? 'wait' : 'pointer', opacity: !booking ? 0.5 : 1 }}
               >
-                {ordering ? 'Placing…' : 'Place Order'}
+                {ordering ? 'Buyurtma berilmoqda…' : 'Buyurtma berish'}
               </button>
             </div>
           </div>
@@ -284,20 +284,20 @@ export function GuestPortal() {
         {/* ─── Report Issue ─── */}
         {!loading && activeTab === 'report' && (
           <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Report a Maintenance Issue</h3>
-            {!booking && <p style={{ color: '#dc2626', fontSize: 13 }}>You must be checked in to report issues.</p>}
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Texnik muammo xabar berish</h3>
+            {!booking && <p style={{ color: '#dc2626', fontSize: 13 }}>Muammo xabar berish uchun avval ro'yxatdan o'tishingiz kerak.</p>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Description</label>
-                <textarea rows={3} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Describe the problem…" value={issueDesc} onChange={e => setIssueDesc(e.target.value)} />
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Tavsif</label>
+                <textarea rows={3} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Muammoni tasvirlab bering…" value={issueDesc} onChange={e => setIssueDesc(e.target.value)} />
               </div>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Priority</label>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Ustuvorlik</label>
                 <select style={inputStyle} value={issuePriority} onChange={e => setIssuePriority(e.target.value)}>
-                  <option value="low">Low</option>
-                  <option value="normal">Normal</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
+                  <option value="low">Past</option>
+                  <option value="normal">O'rta</option>
+                  <option value="high">Yuqori</option>
+                  <option value="critical">Kritik</option>
                 </select>
               </div>
               <button
@@ -305,7 +305,7 @@ export function GuestPortal() {
                 disabled={reporting || !booking}
                 style={{ padding: '11px', borderRadius: 8, border: 'none', backgroundColor: '#dc2626', color: '#fff', fontSize: 13, fontWeight: 700, cursor: reporting ? 'wait' : 'pointer', opacity: !booking ? 0.5 : 1 }}
               >
-                {reporting ? 'Submitting…' : 'Submit Report'}
+                {reporting ? 'Yuborilmoqda…' : 'Hisobotni yuborish'}
               </button>
             </div>
           </div>

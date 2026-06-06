@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Bell, Globe, Shield, Users, Building, Save } from 'lucide-react';
 
 const sections = [
-  { id: 'hotel', label: 'Hotel Info', icon: Building },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'localization', label: 'Localization', icon: Globe },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'staff', label: 'Staff & Access', icon: Users },
+  { id: 'hotel', label: 'Mehmonxona ma\'lumotlari', icon: Building },
+  { id: 'notifications', label: 'Bildirishnomalar', icon: Bell },
+  { id: 'localization', label: 'Tillar', icon: Globe },
+  { id: 'security', label: 'Xavfsizlik', icon: Shield },
+  { id: 'staff', label: 'Xodimlar va kirish', icon: Users },
 ];
 
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
@@ -85,7 +85,7 @@ export function Settings() {
               transition: 'background 0.2s',
             }}
           >
-            <Save size={13} /> {saved ? 'Saved!' : 'Save Changes'}
+            <Save size={13} /> {saved ? 'Saqlandi!' : 'O\'zgarishlarni saqlash'}
           </button>
         </div>
 
@@ -93,10 +93,10 @@ export function Settings() {
           {activeSection === 'hotel' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
               {[
-                { label: 'Hotel Name', value: 'Grand Horizon Hotel', ph: '' },
-                { label: 'City', value: 'New York, NY', ph: '' },
-                { label: 'Contact Email', value: 'gm@grandhorizon.com', ph: '' },
-                { label: 'Main Phone', value: '+1 (212) 555-0192', ph: '' },
+                { label: 'Mehmonxona nomi', value: 'GrandStay Mehmonxonasi', ph: '' },
+                { label: 'Shahar', value: 'Toshkent, O\'zbekiston', ph: '' },
+                { label: 'Aloqa email', value: 'info@grandstay.uz', ph: '' },
+                { label: 'Asosiy telefon', value: '+998 71 123 45 67', ph: '' },
               ].map(({ label, value, ph }) => (
                 <div key={label}>
                   <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>{label}</label>
@@ -104,7 +104,7 @@ export function Settings() {
                 </div>
               ))}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Total Rooms</label>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Jami xonalar</label>
                 <input type="number" style={inputStyle} defaultValue={80} />
               </div>
             </div>
@@ -113,10 +113,10 @@ export function Settings() {
           {activeSection === 'notifications' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}>
               {[
-                { key: 'maintenance', label: 'Maintenance Alerts', desc: 'Get notified on new critical tickets' },
-                { key: 'checkin', label: 'Check-In / Check-Out', desc: 'Receive alerts on guest activity' },
-                { key: 'service', label: 'Room Service Orders', desc: 'Notify when new orders arrive' },
-                { key: 'housekeeping', label: 'Housekeeping Updates', desc: 'Status changes for room cleaning' },
+                { key: 'maintenance', label: 'Texnik xizmat ogohlantirishlari', desc: 'Yangi kritik murojaatlar haqida bildirishnoma olish' },
+                { key: 'checkin', label: 'Kirish / Chiqish', desc: 'Mehmon faoliyati haqida bildirishnoma olish' },
+                { key: 'service', label: 'Xona xizmati buyurtmalari', desc: 'Yangi buyurtmalar kelganda bildirishnoma olish' },
+                { key: 'housekeeping', label: 'Tozalash yangilanishlari', desc: 'Xona tozalash holati o\'zgarganda bildirishnoma' },
               ].map(({ key, label, desc }) => (
                 <div key={key} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -136,10 +136,10 @@ export function Settings() {
           {activeSection === 'localization' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
               {[
-                { label: 'Language', options: ['English (US)', 'French', 'Spanish', 'Arabic'] },
-                { label: 'Currency', options: ['USD ($)', 'EUR (€)', 'GBP (£)', 'AED (د.إ)'] },
-                { label: 'Date Format', options: ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'] },
-                { label: 'Time Zone', options: ['America/New_York', 'Europe/London', 'Asia/Dubai'] },
+                { label: 'Til', options: ['O\'zbek', 'Русский', 'English'] },
+                { label: 'Valyuta', options: ['UZS (so\'m)', 'USD ($)', 'EUR (€)'] },
+                { label: 'Sana formati', options: ['DD.MM.YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'] },
+                { label: 'Vaqt mintaqasi', options: ['Asia/Tashkent', 'Asia/Samarkand', 'Europe/Moscow'] },
               ].map(({ label, options }) => (
                 <div key={label}>
                   <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>{label}</label>
@@ -154,12 +154,12 @@ export function Settings() {
           {activeSection === 'security' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
               <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '12px 16px' }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#1d4ed8', margin: '0 0 4px' }}>Two-Factor Authentication</p>
-                <p style={{ fontSize: 12, color: '#3b82f6', margin: 0 }}>2FA is currently enabled for all admin accounts.</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1d4ed8', margin: '0 0 4px' }}>Ikki bosqichli autentifikatsiya</p>
+                <p style={{ fontSize: 12, color: '#3b82f6', margin: 0 }}>2FA barcha admin hisoblar uchun yoqilgan.</p>
               </div>
               {[
-                { label: 'Session Timeout', options: ['15 minutes', '30 minutes', '1 hour', '4 hours'] },
-                { label: 'Password Policy', options: ['Strong (min 12 chars)', 'Very Strong (min 16 + special chars)'] },
+                { label: 'Sessiya muddati', options: ['15 daqiqa', '30 daqiqa', '1 soat', '4 soat'] },
+                { label: 'Parol siyosati', options: ['Kuchli (kamida 12 belgi)', 'Juda kuchli (kamida 16 + maxsus belgilar)'] },
               ].map(({ label, options }) => (
                 <div key={label}>
                   <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>{label}</label>
@@ -176,24 +176,24 @@ export function Settings() {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f8fafc' }}>
-                    {['Name', 'Role', 'Email', 'Status'].map(h => (
+                    {['Ism', 'Lavozim', 'Email', 'Holat'].map(h => (
                       <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    { name: 'Richard Thornton', role: 'General Manager', email: 'r.thornton@gh.com', active: true },
-                    { name: 'Priya Nair', role: 'Front Desk Supervisor', email: 'p.nair@gh.com', active: true },
-                    { name: 'Alex Rivera', role: 'Head Technician', email: 'a.rivera@gh.com', active: true },
-                    { name: 'Maria Santos', role: 'Housekeeping Supervisor', email: 'm.santos@gh.com', active: true },
+                    { name: 'Aziz Karimov', role: 'Bosh menejer', email: 'a.karimov@grandstay.uz', active: true },
+                    { name: 'Dilnoza Rashidova', role: 'Qabulxona boshlig\'i', email: 'd.rashidova@grandstay.uz', active: true },
+                    { name: 'Bobur Alimov', role: 'Bosh texnik', email: 'b.alimov@grandstay.uz', active: true },
+                    { name: 'Malika Usmanova', role: 'Tozalash boshlig\'i', email: 'm.usmanova@grandstay.uz', active: true },
                   ].map((staff, i) => (
                     <tr key={i} style={{ borderTop: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '11px 14px', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{staff.name}</td>
                       <td style={{ padding: '11px 14px', fontSize: 12, color: '#64748b' }}>{staff.role}</td>
                       <td style={{ padding: '11px 14px', fontSize: 12, color: '#64748b' }}>{staff.email}</td>
                       <td style={{ padding: '11px 14px' }}>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: '#16a34a', backgroundColor: '#f0fdf4', borderRadius: 20, padding: '2px 9px' }}>Active</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#16a34a', backgroundColor: '#f0fdf4', borderRadius: 20, padding: '2px 9px' }}>Faol</span>
                       </td>
                     </tr>
                   ))}

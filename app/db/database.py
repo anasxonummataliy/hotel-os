@@ -25,18 +25,25 @@ from app.schemas.enums import RoomStatus, RoomType
 
 
 # ── Seed data ─────────────────────────────────────────────────────────────────
+# Prices based on real Uzbekistan 4-star hotels (USD/night):
+# Single (Standard): ~$80 (Ramada Tashkent, Hilton Garden Inn)
+# Double: ~$120 (Hyatt Regency Tashkent, Lotte City Hotel)
+# Suite (Luxury): ~$250 (Hilton Tashkent City, Intercontinental)
+# Accessible: ~$95 (adapted standard rooms)
 
 _ROOM_SEED = [
-    (1,  "101", 1, "single",     50.0),
-    (2,  "102", 1, "single",     50.0),
-    (3,  "103", 1, "double",     75.0),
-    (4,  "104", 1, "double",     75.0),
-    (5,  "105", 1, "suite",     120.0),
-    (6,  "201", 2, "single",     50.0),
-    (7,  "202", 2, "accessible", 85.0),
-    (8,  "203", 2, "double",     75.0),
-    (9,  "204", 2, "suite",     120.0),
-    (10, "205", 2, "double",     75.0),
+    # Floor 1
+    (1,  "101", 1, "single",      80.0),
+    (2,  "102", 1, "single",      80.0),
+    (3,  "103", 1, "double",     120.0),
+    (4,  "104", 1, "double",     120.0),
+    (5,  "105", 1, "suite",      250.0),
+    # Floor 2
+    (6,  "201", 2, "single",      80.0),
+    (7,  "202", 2, "accessible",  95.0),
+    (8,  "203", 2, "double",     120.0),
+    (9,  "204", 2, "suite",      250.0),
+    (10, "205", 2, "double",     120.0),
 ]
 
 

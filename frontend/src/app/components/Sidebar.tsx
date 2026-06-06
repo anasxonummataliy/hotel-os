@@ -1,6 +1,7 @@
 import {
   Home, BedDouble, Sparkles, UtensilsCrossed, Wrench, BarChart3, Settings, ChevronRight
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import type { ActiveView } from './types';
 
 interface SidebarProps {
@@ -8,17 +9,22 @@ interface SidebarProps {
   onNavigate: (view: ActiveView) => void;
 }
 
-const navItems: { id: ActiveView; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
-  { id: 'dashboard', label: 'Home', icon: Home },
-  { id: 'reception', label: 'Reception', icon: BedDouble },
-  { id: 'housekeeping', label: 'Housekeeping', icon: Sparkles },
-  { id: 'kitchen', label: 'Room Service', icon: UtensilsCrossed },
-  { id: 'maintenance', label: 'Maintenance', icon: Wrench },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'settings', label: 'Settings', icon: Settings },
+const navItems: { id: ActiveView; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; roles: string[] }[] = [
+  { id: 'dashboard', label: 'Bosh sahifa', icon: Home, roles: ['admin', 'reception', 'housekeeping', 'room_service', 'maintenance'] },
+  { id: 'reception', label: 'Qabulxona', icon: BedDouble, roles: ['admin', 'reception'] },
+  { id: 'housekeeping', label: 'Tozalash', icon: Sparkles, roles: ['admin', 'housekeeping'] },
+  { id: 'kitchen', label: 'Xona xizmati', icon: UtensilsCrossed, roles: ['admin', 'room_service', 'reception'] },
+  { id: 'maintenance', label: 'Texnik xizmat', icon: Wrench, roles: ['admin', 'maintenance'] },
+  { id: 'analytics', label: 'Statistika', icon: BarChart3, roles: ['admin', 'reception'] },
+  { id: 'settings', label: 'Sozlamalar', icon: Settings, roles: ['admin'] },
 ];
 
 export function Sidebar({ activeView, onNavigate }: SidebarProps) {
+  const { user } = useAuth();
+  const userRole = user?.role ?? 'reception';
+
+  // Filter nav items by user role
+  const visibleItems = navItems.filter(item => item.roles.includes(userRole));
   return (
     <aside
       style={{ backgroundColor: '#1e293b', fontFamily: 'Inter, sans-serif', width: 220, minWidth: 220 }}
@@ -34,13 +40,13 @@ export function Sidebar({ activeView, onNavigate }: SidebarProps) {
         </div>
         <div>
           <span style={{ color: '#f8fafc', fontSize: 15, fontWeight: 700, letterSpacing: '-0.3px' }}>HotelOS</span>
-          <p style={{ color: '#94a3b8', fontSize: 10, marginTop: 1 }}>Management Suite</p>
+          <p style={{ color: '#94a3b8', fontSize: 10, marginTop: 1 }}>Boshqaruv tizimi</p>
         </div>
       </div>
 
       {/* Nav Items */}
       <nav className="flex-1 px-3 py-4" style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {navItems.map(({ id, label, icon: Icon }) => {
+        {visibleItems.map(({ id, label, icon: Icon }) => {
           const isActive = activeView === id;
           return (
             <button
@@ -92,7 +98,7 @@ export function Sidebar({ activeView, onNavigate }: SidebarProps) {
 
       {/* Footer */}
       <div style={{ padding: '16px 16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-        <p style={{ color: '#475569', fontSize: 11, textAlign: 'center' }}>v2.4.1 · Grand Horizon Hotel</p>
+        <p style={{ color: '#475569', fontSize: 11, textAlign: 'center' }}>v2.4.1 · GrandStay Mehmonxonasi</p>
       </div>
     </aside>
   );

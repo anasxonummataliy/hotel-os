@@ -6,19 +6,19 @@ interface LiveFeedProps {
 }
 
 const typeConfig = {
-  status: { icon: RefreshCw, color: '#3b82f6', bg: '#eff6ff', label: 'Status' },
-  checkin: { icon: ArrowRight, color: '#22c55e', bg: '#f0fdf4', label: 'Check-in' },
-  checkout: { icon: CheckCircle, color: '#8b5cf6', bg: '#f5f3ff', label: 'Check-out' },
-  maintenance: { icon: AlertTriangle, color: '#ef4444', bg: '#fef2f2', label: 'Maintenance' },
-  service: { icon: Coffee, color: '#f59e0b', bg: '#fffbeb', label: 'Service' },
+  status: { icon: RefreshCw, color: '#3b82f6', bg: '#eff6ff', label: 'Holat' },
+  checkin: { icon: ArrowRight, color: '#22c55e', bg: '#f0fdf4', label: 'Kirish' },
+  checkout: { icon: CheckCircle, color: '#8b5cf6', bg: '#f5f3ff', label: 'Chiqish' },
+  maintenance: { icon: AlertTriangle, color: '#ef4444', bg: '#fef2f2', label: 'Texnik xizmat' },
+  service: { icon: Coffee, color: '#f59e0b', bg: '#fffbeb', label: 'Xizmat' },
 };
 
 function timeAgo(date: Date): string {
   const diffMs = Date.now() - date.getTime();
   const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  return `${Math.floor(mins / 60)}h ago`;
+  if (mins < 1) return 'Hozirgina';
+  if (mins < 60) return `${mins} daq. oldin`;
+  return `${Math.floor(mins / 60)} soat oldin`;
 }
 
 export function LiveFeed({ events }: LiveFeedProps) {
@@ -41,8 +41,8 @@ export function LiveFeed({ events }: LiveFeedProps) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', margin: 0 }}>Live Activity</h3>
-          <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Real-time updates</p>
+          <h3 style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', margin: 0 }}>Jonli faoliyat</h3>
+          <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Real vaqt yangilanishlari</p>
         </div>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -50,7 +50,7 @@ export function LiveFeed({ events }: LiveFeedProps) {
           border: '1px solid #bbf7d0', borderRadius: 20, padding: '2px 8px',
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22c55e' }} />
-          Live
+          Jonli
         </span>
       </div>
 
