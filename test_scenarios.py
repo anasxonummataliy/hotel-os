@@ -1,9 +1,3 @@
-"""
-Hotel OS Test Scenarios (LO4 Verification)
-
-Run these tests to verify all algorithms and workflows work correctly.
-"""
-
 import httpx
 import json
 import time
@@ -20,7 +14,6 @@ client = httpx.Client(timeout=10.0)
 
 
 def get_token(email: str, password: str) -> str:
-    """Obtain a JWT token for the given credentials."""
     r = client.post(
         f"{BASE_URL}:{AUTH_PORT}/auth/login",
         data={"username": email, "password": password},
@@ -40,13 +33,6 @@ def headers(token: str = None) -> dict:
 
 
 def test_ts01_room_allocation_algorithm():
-    """
-    TS-01: Room Allocation Algorithm
-    Verify system allocates cleanest available room of requested type
-    """
-    print("\n" + "=" * 60)
-    print("TEST TS-01: Room Allocation Algorithm")
-    print("=" * 60)
 
     guest_data = {
         "first_name": "Ali",
@@ -83,10 +69,6 @@ def test_ts01_room_allocation_algorithm():
 
 
 def test_ts02_checkout_auto_clean_queue():
-    """
-    TS-02: Check-Out & Automatic Cleaning Queue
-    Verify room is marked dirty and added to cleaning queue
-    """
     print("\n" + "=" * 60)
     print("TEST TS-02: Check-Out & Auto-Clean Queue")
     print("=" * 60)
@@ -116,10 +98,6 @@ def test_ts02_checkout_auto_clean_queue():
 
 
 def test_ts03_housekeeping_workflow():
-    """
-    TS-03: Housekeeping Workflow
-    Verify cleaning start → complete → room becomes clean
-    """
     print("\n" + "=" * 60)
     print("TEST TS-03: Housekeeping Workflow")
     print("=" * 60)
@@ -158,10 +136,6 @@ def test_ts03_housekeeping_workflow():
 
 
 def test_ts04_room_service_integration():
-    """
-    TS-04: Room Service Order Integration
-    Verify order created → delivered → charges added to bill
-    """
     print("\n" + "=" * 60)
     print("TEST TS-04: Room Service Integration")
     print("=" * 60)
@@ -216,10 +190,6 @@ def test_ts04_room_service_integration():
 
 
 def test_ts05_maintenance_priority_queue():
-    """
-    TS-05: Maintenance Priority Queue Algorithm
-    Verify issues sorted by priority (critical > high > normal > low), then FIFO
-    """
     print("\n" + "=" * 60)
     print("TEST TS-05: Maintenance Priority Queue Algorithm")
     print("=" * 60)
@@ -276,10 +246,6 @@ def test_ts05_maintenance_priority_queue():
 
 
 def test_ts06_concurrent_checkin():
-    """
-    TS-06: Concurrent Check-In (Race Condition)
-    Verify system handles simultaneous check-ins correctly
-    """
     print("\n" + "=" * 60)
     print("TEST TS-06: Concurrent Check-In Handling")
     print("=" * 60)
@@ -310,10 +276,6 @@ def test_ts06_concurrent_checkin():
 
 
 def test_ts07_no_rooms_available():
-    """
-    TS-07: No Rooms Available of Requested Type
-    Verify system returns clear 'no rooms available' message with alternative suggestions
-    """
     print("\n" + "=" * 60)
     print("TEST TS-07: No Rooms Available — Alternative Suggestion")
     print("=" * 60)
@@ -356,10 +318,6 @@ def test_ts07_no_rooms_available():
 
 
 def test_ts08_invalid_room_input():
-    """
-    TS-08: Invalid Room Number / Input Validation
-    Verify system rejects invalid inputs gracefully without crashing
-    """
     print("\n" + "=" * 60)
     print("TEST TS-08: Input Validation & Error Handling")
     print("=" * 60)
@@ -408,7 +366,6 @@ def test_ts08_invalid_room_input():
 
 
 def run_all_tests():
-    """Run all test scenarios."""
     print("\n" + "=" * 80)
     print(" " * 20 + "HOTEL OS - TEST SUITE (LO4 VERIFICATION)")
     print("=" * 80)

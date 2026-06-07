@@ -1,7 +1,3 @@
-"""
-Housekeeping Service — Port 8002
-Listens for room_vacated events and manages the cleaning queue.
-"""
 import logging
 import asyncio
 from contextlib import asynccontextmanager
@@ -23,7 +19,6 @@ logging.basicConfig(level=logging.INFO)
 publisher = make_publisher()
 subscriber = make_subscriber()
 
-# ── Cleaning Queue ────────────────────────────────────────────────────────────
 
 class CleaningQueue:
     def __init__(self):
@@ -37,18 +32,20 @@ class CleaningQueue:
     def remove(self, room_id: int):
         self.queue = [t for t in self.queue if t["room_id"] != room_id]
 
+
 cleaning_queue = CleaningQueue()
+
 
 def handle_room_vacated(event):
     room_id = event.data.get("room_id")
     logger.info("room_vacated → queuing room %s for cleaning", room_id)
     cleaning_queue.add(room_id)
 
+
 async def event_listener_task():
     subscriber.subscribe(EVENT_ROOM_VACATED, handle_room_vacated)
     await subscriber.listen()
 
-# ── App ───────────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -64,10 +61,10 @@ async def lifespan(app: FastAPI):
     publisher.close()
     logger.info("Housekeeping Service shut down.")
 
+
 app = FastAPI(title="Housekeeping Service", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.post("/clean/start")
 async def start_cleaning(room_id: int, current: dict = Depends(require_roles("admin", "housekeeping"))):
@@ -79,6 +76,7 @@ async def start_cleaning(room_id: int, current: dict = Depends(require_roles("ad
     db.update_room_status(room_id, RoomStatus.CLEANING)
     publisher.publish("cleaning_started", "housekeeping", {"room_id": room_id, "room_number": room.number})
     return {"status": "cleaning_started", "room_id": room_id, "room_number": room.number}
+
 
 @app.post("/clean/complete")
 async def complete_cleaning(room_id: int, current: dict = Depends(require_roles("admin", "housekeeping"))):
@@ -93,13 +91,16 @@ async def complete_cleaning(room_id: int, current: dict = Depends(require_roles(
     publisher.publish(EVENT_ROOM_CLEANED, "housekeeping", {"room_id": room_id, "room_number": room.number})
     return {"status": "cleaning_completed", "room_id": room_id, "room_number": room.number}
 
+
 @app.get("/queue")
 async def get_queue(current: dict = Depends(require_roles("admin", "housekeeping"))):
     return {"queue": cleaning_queue.queue}
 
+
 @app.get("/health")
 async def health():
     return {"status": "healthy", "service": "housekeeping"}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=settings.HOUSEKEEPING_SERVICE_PORT)

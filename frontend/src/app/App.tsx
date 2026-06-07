@@ -1,10 +1,3 @@
-/**
- * App.tsx — root component.
- * - Shows <LoginPage> when user is not authenticated.
- * - Fetches real room data from /rooms on mount.
- * - Subscribes to WebSocket at ws://localhost:8005/ws/dashboard for live events.
- * - Passes real data down to child components.
- */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Toaster } from 'sonner';
 import { Sidebar } from './components/Sidebar';
@@ -25,9 +18,6 @@ import { toast } from '../lib/toast';
 import type { ActiveView, Room, ActivityEvent } from './components/types';
 import { initialActivity } from './components/mockData';
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
-/** Map backend RoomData → frontend Room shape */
 function mapRoom(r: RoomData): Room {
   const statusMap: Record<string, Room['status']> = {
     clean: 'available',
@@ -56,8 +46,6 @@ function mapRoom(r: RoomData): Room {
   };
 }
 
-// ── component ─────────────────────────────────────────────────────────────────
-
 export default function App() {
   const { user, loading: authLoading, logout } = useAuth();
 
@@ -66,8 +54,6 @@ export default function App() {
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [activity, setActivity] = useState<ActivityEvent[]>(initialActivity);
   const wsRef = useRef<WebSocket | null>(null);
-
-  // ── helpers ────────────────────────────────────────────────────────────────
 
   const addActivity = useCallback((msg: string, type: ActivityEvent['type']) => {
     const newEvent: ActivityEvent = {
@@ -78,8 +64,6 @@ export default function App() {
     };
     setActivity(prev => [newEvent, ...prev].slice(0, 30));
   }, []);
-
-  // ── fetch rooms + bookings ─────────────────────────────────────────────────
 
   const fetchRooms = useCallback(async () => {
     setRoomsLoading(true);
@@ -97,14 +81,22 @@ export default function App() {
       }
 
       // Build guest-name lookup from active bookings
-      const guestByRoom: Record<number, { name: string; checkIn: string; checkOut: string; bookingId: number }> = {};
+      const guestByRoom: Record<number, { name: string; checkIn: string; checkOut: string; bookingId: number; balance: number }> = {};
       for (const b of bookingList) {
         if (b.status === 'checked_in') {
+          // Calculate balance: price_per_night × nights stayed so far
+          const room = roomList.find(r => r.id === b.room_id);
+          const checkInDate = new Date(b.check_in_date);
+          const today = new Date();
+          const nightsStayed = Math.max(1, Math.ceil((today.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
+          const roomCharge = (room?.price_per_night ?? 0) * nightsStayed;
+
           guestByRoom[b.room_id] = {
-            name: guestNames[b.guest_id] || `Guest #${b.guest_id}`,
+            name: guestNames[b.guest_id] || `Mehmon #${b.guest_id}`,
             checkIn: b.check_in_date,
             checkOut: b.check_out_date,
             bookingId: b.id,
+            balance: roomCharge,
           };
         }
       }
@@ -114,7 +106,7 @@ export default function App() {
           const base = mapRoom(r);
           const booking = guestByRoom[r.id];
           return booking
-            ? { ...base, guestName: booking.name, checkIn: booking.checkIn, checkOut: booking.checkOut }
+            ? { ...base, guestName: booking.name, checkIn: booking.checkIn, checkOut: booking.checkOut, balance: booking.balance }
             : base;
         })
       );
@@ -124,8 +116,6 @@ export default function App() {
       setRoomsLoading(false);
     }
   }, []);
-
-  // ── WebSocket live updates ─────────────────────────────────────────────────
 
   useEffect(() => {
     if (!user) return;
@@ -149,7 +139,6 @@ export default function App() {
 
           switch (payload.event_type) {
             case 'dashboard_init':
-              // Initial snapshot — refresh rooms from API to get full data
               fetchRooms();
               break;
 
@@ -195,7 +184,6 @@ export default function App() {
               break;
           }
         } catch {
-          /* ignore malformed messages */
         }
       };
 
@@ -216,12 +204,9 @@ export default function App() {
     };
   }, [user, addActivity, fetchRooms]);
 
-  // Fetch rooms once after login
   useEffect(() => {
     if (user) fetchRooms();
   }, [user, fetchRooms]);
-
-  // ── Reception handlers ────────────────────────────────────────────────────
 
   const handleCheckIn = useCallback(async (data: {
     guestName: string;
@@ -320,9 +305,6 @@ export default function App() {
     if (room.status === 'occupied') setActiveView('reception');
   };
 
-  // ── render ─────────────────────────────────────────────────────────────────
-
-  // Auth still loading (checking stored token)
   if (authLoading) {
     return (
       <div style={{
@@ -335,10 +317,8 @@ export default function App() {
     );
   }
 
-  // Not logged in → show login page
   if (!user) return <LoginPage />;
 
-  // Guest user → show Guest Portal
   if (user.role === 'guest') {
     return (
       <>

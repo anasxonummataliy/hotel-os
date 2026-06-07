@@ -1,8 +1,3 @@
-/**
- * Maintenance — priority queue board.
- * Fetches tickets from /maintenance/tickets and resolves via /maintenance/{id}/resolve.
- * Brief: TS-05 priority queue (Critical > High > Normal > Low), FIFO within same level.
- */
 import { useState, useEffect, useCallback } from 'react';
 import { X, CheckCircle, AlertTriangle, Clock, RefreshCw, Plus } from 'lucide-react';
 import {
@@ -205,7 +200,6 @@ export function Maintenance() {
                   <tr key={ticket.id} style={{ borderTop: '1px solid #f1f5f9', opacity: isResolved ? 0.55 : 1, backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa' }}>
                     <td style={{ padding: '12px 14px', fontSize: 12, fontWeight: 600, color: '#64748b', fontFamily: 'monospace' }}>#{ticket.id}</td>
                     <td style={{ padding: '12px 14px', fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
-                      {/* Look up room number from rooms list */}
                       {rooms.find(r => r.id === ticket.room_id)?.number ?? ticket.room_id}
                     </td>
                     <td style={{ padding: '12px 14px', maxWidth: 240 }}>

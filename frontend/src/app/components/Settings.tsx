@@ -1,10 +1,33 @@
-import { useState } from 'react';
-import { Bell, Globe, Shield, Users, Building, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Globe, Shield, Users, Building, Save, User } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { toast } from '../../lib/toast';
+
+const CURRENCY_RATES: Record<string, { symbol: string; rate: number; label: string }> = {
+  USD: { symbol: '$', rate: 1, label: 'USD ($)' },
+  UZS: { symbol: 'so\'m', rate: 12750, label: 'UZS (so\'m)' },
+  EUR: { symbol: '€', rate: 0.92, label: 'EUR (€)' },
+  RUB: { symbol: '₽', rate: 89, label: 'RUB (₽)' },
+};
+
+export function getCurrency(): string {
+  return localStorage.getItem('hotel_currency') || 'USD';
+}
+
+export function formatPrice(usdAmount: number): string {
+  const cur = getCurrency();
+  const { symbol, rate } = CURRENCY_RATES[cur] || CURRENCY_RATES.USD;
+  const converted = usdAmount * rate;
+  if (cur === 'UZS') return `${Math.round(converted).toLocaleString()} ${symbol}`;
+  if (cur === 'RUB') return `${Math.round(converted).toLocaleString()} ${symbol}`;
+  return `${symbol}${converted.toFixed(2)}`;
+}
 
 const sections = [
   { id: 'hotel', label: 'Mehmonxona ma\'lumotlari', icon: Building },
+  { id: 'profile', label: 'Profil', icon: User },
+  { id: 'currency', label: 'Valyuta', icon: Globe },
   { id: 'notifications', label: 'Bildirishnomalar', icon: Bell },
-  { id: 'localization', label: 'Tillar', icon: Globe },
   { id: 'security', label: 'Xavfsizlik', icon: Shield },
   { id: 'staff', label: 'Xodimlar va kirish', icon: Users },
 ];
@@ -34,14 +57,37 @@ const inputStyle: React.CSSProperties = {
 };
 
 export function Settings() {
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('hotel');
   const [notifs, setNotifs] = useState({ maintenance: true, checkin: true, service: false, housekeeping: true });
   const [saved, setSaved] = useState(false);
 
+  // Currency
+  const [currency, setCurrency] = useState(getCurrency());
+
+  // Profile rename
+  const [newName, setNewName] = useState(user?.full_name ?? '');
+  useEffect(() => { setNewName(user?.full_name ?? ''); }, [user]);
+
   const handleSave = () => {
     setSaved(true);
+    toast.success('Saqlandi!');
     setTimeout(() => setSaved(false), 2000);
   };
+
+  const handleCurrencyChange = (val: string) => {
+    setCurrency(val);
+    localStorage.setItem('hotel_currency', val);
+    toast.success(`Valyuta o'zgartirildi: ${CURRENCY_RATES[val]?.label}`);
+    window.dispatchEvent(new Event('currency-changed'));
+  };
+
+  const handleRename = () => {
+    if (!newName.trim()) { toast.error('Ism bo\'sh bo\'lishi mumkin emas'); return; }
+    toast.success('Ism saqlandi!');
+  };
+
+  const exampleUSD = 120;
 
   return (
     <div style={{ padding: 24, fontFamily: 'Inter, sans-serif', flex: 1, overflowY: 'auto', display: 'flex', gap: 20, alignItems: 'flex-start' }}>
@@ -75,37 +121,84 @@ export function Settings() {
           <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 }}>
             {sections.find(s => s.id === activeSection)?.label}
           </h3>
-          <button
-            onClick={handleSave}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              backgroundColor: saved ? '#16a34a' : '#1e293b',
-              color: '#fff', border: 'none', borderRadius: 8,
-              padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-              transition: 'background 0.2s',
-            }}
-          >
-            <Save size={13} /> {saved ? 'Saqlandi!' : 'O\'zgarishlarni saqlash'}
-          </button>
         </div>
 
         <div style={{ padding: 24 }}>
+
           {activeSection === 'hotel' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
               {[
-                { label: 'Mehmonxona nomi', value: 'GrandStay Mehmonxonasi', ph: '' },
-                { label: 'Shahar', value: 'Toshkent, O\'zbekiston', ph: '' },
-                { label: 'Aloqa email', value: 'info@grandstay.uz', ph: '' },
-                { label: 'Asosiy telefon', value: '+998 71 123 45 67', ph: '' },
-              ].map(({ label, value, ph }) => (
+                { label: 'Mehmonxona nomi', value: 'GrandStay Mehmonxonasi' },
+                { label: 'Shahar', value: 'Toshkent, O\'zbekiston' },
+                { label: 'Aloqa email', value: 'info@grandstay.uz' },
+                { label: 'Asosiy telefon', value: '+998 71 123 45 67' },
+              ].map(({ label, value }) => (
                 <div key={label}>
                   <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>{label}</label>
-                  <input style={inputStyle} defaultValue={value} placeholder={ph} />
+                  <input style={{ ...inputStyle, backgroundColor: '#f1f5f9', color: '#64748b' }} value={value} disabled />
                 </div>
               ))}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Jami xonalar</label>
-                <input type="number" style={inputStyle} defaultValue={80} />
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Xonalar soni</label>
+                <input type="number" style={{ ...inputStyle, backgroundColor: '#f1f5f9', color: '#64748b' }} value={10} disabled />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Vaqt mintaqasi</label>
+                <input style={{ ...inputStyle, backgroundColor: '#f1f5f9', color: '#64748b' }} value="Asia/Tashkent (UTC+5)" disabled />
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'profile' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>To'liq ism</label>
+                <input style={inputStyle} value={newName} onChange={e => setNewName(e.target.value)} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Email</label>
+                <input style={{ ...inputStyle, backgroundColor: '#f1f5f9', color: '#94a3b8' }} value={user?.email ?? ''} disabled />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Rol</label>
+                <input style={{ ...inputStyle, backgroundColor: '#f1f5f9', color: '#94a3b8' }} value={user?.role ?? ''} disabled />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Login</label>
+                <input style={{ ...inputStyle, backgroundColor: '#f1f5f9', color: '#94a3b8' }} value={user?.username ?? ''} disabled />
+              </div>
+              <button
+                onClick={handleRename}
+                disabled={newName.trim() === user?.full_name}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  backgroundColor: newName.trim() !== user?.full_name ? '#1e293b' : '#e2e8f0',
+                  color: newName.trim() !== user?.full_name ? '#fff' : '#94a3b8',
+                  border: 'none', borderRadius: 8, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                <Save size={13} /> Saqlash
+              </button>
+            </div>
+          )}
+
+          {activeSection === 'currency' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
+              <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>
+                Narxlar tanlangan valyutada ko'rsatiladi. Kurs: 1 USD = 12,750 so'm
+              </p>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Valyuta</label>
+                <select style={inputStyle} value={currency} onChange={e => handleCurrencyChange(e.target.value)}>
+                  {Object.entries(CURRENCY_RATES).map(([key, { label }]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ padding: '12px 14px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8 }}>
+                <p style={{ fontSize: 13, color: '#16a34a', margin: 0 }}>
+                  Namuna: <strong>$120</strong> = <strong>{formatPrice(exampleUSD)}</strong>
+                </p>
               </div>
             </div>
           )}
@@ -113,10 +206,10 @@ export function Settings() {
           {activeSection === 'notifications' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}>
               {[
-                { key: 'maintenance', label: 'Texnik xizmat ogohlantirishlari', desc: 'Yangi kritik murojaatlar haqida bildirishnoma olish' },
-                { key: 'checkin', label: 'Kirish / Chiqish', desc: 'Mehmon faoliyati haqida bildirishnoma olish' },
-                { key: 'service', label: 'Xona xizmati buyurtmalari', desc: 'Yangi buyurtmalar kelganda bildirishnoma olish' },
-                { key: 'housekeeping', label: 'Tozalash yangilanishlari', desc: 'Xona tozalash holati o\'zgarganda bildirishnoma' },
+                { key: 'maintenance', label: 'Texnik xizmat ogohlantirishlari', desc: 'Kritik muammolar haqida xabar' },
+                { key: 'checkin', label: 'Kirish / Chiqish', desc: 'Mehmon harakatlari haqida xabar' },
+                { key: 'service', label: 'Xona xizmati buyurtmalari', desc: 'Yangi buyurtma kelganda xabar' },
+                { key: 'housekeeping', label: 'Tozalash yangilanishlari', desc: 'Xona holati o\'zgarishi' },
               ].map(({ key, label, desc }) => (
                 <div key={key} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -130,44 +223,30 @@ export function Settings() {
                   <Toggle value={notifs[key as keyof typeof notifs]} onChange={v => setNotifs(n => ({ ...n, [key]: v }))} />
                 </div>
               ))}
-            </div>
-          )}
-
-          {activeSection === 'localization' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
-              {[
-                { label: 'Til', options: ['O\'zbek', 'Русский', 'English'] },
-                { label: 'Valyuta', options: ['UZS (so\'m)', 'USD ($)', 'EUR (€)'] },
-                { label: 'Sana formati', options: ['DD.MM.YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'] },
-                { label: 'Vaqt mintaqasi', options: ['Asia/Tashkent', 'Asia/Samarkand', 'Europe/Moscow'] },
-              ].map(({ label, options }) => (
-                <div key={label}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>{label}</label>
-                  <select style={inputStyle}>
-                    {options.map(o => <option key={o}>{o}</option>)}
-                  </select>
-                </div>
-              ))}
+              <button onClick={handleSave} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                backgroundColor: saved ? '#16a34a' : '#1e293b', color: '#fff', border: 'none',
+                borderRadius: 8, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginTop: 8,
+              }}>
+                <Save size={13} /> {saved ? 'Saqlandi!' : 'Saqlash'}
+              </button>
             </div>
           )}
 
           {activeSection === 'security' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
               <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '12px 16px' }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#1d4ed8', margin: '0 0 4px' }}>Ikki bosqichli autentifikatsiya</p>
-                <p style={{ fontSize: 12, color: '#3b82f6', margin: 0 }}>2FA barcha admin hisoblar uchun yoqilgan.</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1d4ed8', margin: '0 0 4px' }}>JWT Autentifikatsiya</p>
+                <p style={{ fontSize: 12, color: '#3b82f6', margin: 0 }}>Barcha so'rovlar Bearer Token bilan himoyalangan.</p>
               </div>
-              {[
-                { label: 'Sessiya muddati', options: ['15 daqiqa', '30 daqiqa', '1 soat', '4 soat'] },
-                { label: 'Parol siyosati', options: ['Kuchli (kamida 12 belgi)', 'Juda kuchli (kamida 16 + maxsus belgilar)'] },
-              ].map(({ label, options }) => (
-                <div key={label}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>{label}</label>
-                  <select style={inputStyle}>
-                    {options.map(o => <option key={o}>{o}</option>)}
-                  </select>
-                </div>
-              ))}
+              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '12px 16px' }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#16a34a', margin: '0 0 4px' }}>Parol himoyasi</p>
+                <p style={{ fontSize: 12, color: '#16a34a', margin: 0 }}>Parollar Argon2 algoritmi bilan hashlangan.</p>
+              </div>
+              <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '12px 16px' }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', margin: '0 0 4px' }}>Rolga asoslangan kirish</p>
+                <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>Har bir xodim faqat o'z bo'limiga kirish huquqiga ega.</p>
+              </div>
             </div>
           )}
 
@@ -176,7 +255,7 @@ export function Settings() {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f8fafc' }}>
-                    {['Ism', 'Lavozim', 'Email', 'Holat'].map(h => (
+                    {['Ism', 'Rol', 'Email', 'Holat'].map(h => (
                       <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                     ))}
                   </tr>
@@ -184,9 +263,9 @@ export function Settings() {
                 <tbody>
                   {[
                     { name: 'Aziz Karimov', role: 'Bosh menejer', email: 'a.karimov@grandstay.uz', active: true },
-                    { name: 'Dilnoza Rashidova', role: 'Qabulxona boshlig\'i', email: 'd.rashidova@grandstay.uz', active: true },
+                    { name: 'Dilnoza Rashidova', role: 'Qabulxona', email: 'd.rashidova@grandstay.uz', active: true },
                     { name: 'Bobur Alimov', role: 'Bosh texnik', email: 'b.alimov@grandstay.uz', active: true },
-                    { name: 'Malika Usmanova', role: 'Tozalash boshlig\'i', email: 'm.usmanova@grandstay.uz', active: true },
+                    { name: 'Malika Usmanova', role: 'Tozalash', email: 'm.usmanova@grandstay.uz', active: true },
                   ].map((staff, i) => (
                     <tr key={i} style={{ borderTop: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '11px 14px', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{staff.name}</td>

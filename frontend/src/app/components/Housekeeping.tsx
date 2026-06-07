@@ -1,8 +1,3 @@
-/**
- * Housekeeping — real-time kanban board.
- * Fetches rooms from backend and uses /clean/start + /clean/complete endpoints.
- * Calls onStatusChange() so App.tsx can re-fetch the global room list.
- */
 import { useState, useEffect, useCallback } from 'react';
 import { Clock, ArrowRight, CheckCircle, Star, RefreshCw } from 'lucide-react';
 import { getRooms, startCleaning, completeCleaning, type RoomData } from '../../lib/api';
@@ -15,7 +10,6 @@ interface HKRoom {
 }
 
 interface Props {
-  /** Called after a status change so App.tsx can refresh global room state. */
   onStatusChange?: () => void;
 }
 

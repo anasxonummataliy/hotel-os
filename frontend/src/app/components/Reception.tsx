@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { BedDouble, Users, CalendarCheck, CalendarX, Plus, X, CreditCard, Zap, UserPlus, Printer, Search } from 'lucide-react';
 import { registerGuest, getGuests, type GuestCredentials, type GuestData } from '../../lib/api';
 import { toast } from '../../lib/toast';
+import { formatPrice } from './Settings';
 import type { Room } from './types';
 
 interface ReceptionProps {
@@ -178,7 +179,7 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
                       <span style={{ fontSize: 12, color: '#64748b' }}>{room.checkIn}</span>
                     </td>
                     <td style={{ padding: '12px 14px' }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>${room.balance?.toLocaleString()}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{formatPrice(room.balance ?? 0)}</span>
                     </td>
                     <td style={{ padding: '12px 14px' }}>
                       <button
@@ -216,7 +217,6 @@ export function Reception({ rooms, onCheckIn, onCheckOut }: ReceptionProps) {
             </div>
 
             <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {/* Guest Search — inline autocomplete like Telegram */}
               <div style={{ position: 'relative' }}>
                 <label style={labelStyle}>Mehmon *</label>
                 <div style={{ position: 'relative' }}>

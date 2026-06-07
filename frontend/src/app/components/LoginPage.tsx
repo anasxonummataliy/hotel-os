@@ -1,13 +1,3 @@
-/**
- * LoginPage — role-aware login screen.
- * After successful auth, AuthContext updates → App renders the main UI.
- * Default accounts (from auth service seed):
- *   admin@hotel.com / admin123
- *   reception@hotel.com / staff123
- *   housekeeping@hotel.com / staff123
- *   roomservice@hotel.com / staff123
- *   maintenance@hotel.com / staff123
- */
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -44,7 +34,6 @@ export function LoginPage() {
     try {
       await login(username.trim(), password.trim());
     } catch {
-      // error is shown via context.error
     }
   };
 
@@ -55,7 +44,6 @@ export function LoginPage() {
     try {
       await login(u, p);
     } catch {
-      // handled by context
     }
   };
 

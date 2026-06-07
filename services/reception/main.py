@@ -1,8 +1,3 @@
-"""
-Reception Service — Port 8001
-Handles guest check-in, check-out, room inventory and guest management.
-Auth: JWT Bearer token (roles: admin, reception)
-"""
 import logging
 import threading
 import httpx
@@ -30,8 +25,6 @@ _allocation_lock = threading.Lock()
 
 AUTH_BASE = f"http://localhost:{settings.AUTH_SERVICE_PORT}"
 
-
-# ── Schemas ───────────────────────────────────────────────────────────────────
 
 class GuestRegisterRequest(BaseModel):
     first_name: str
@@ -70,7 +63,6 @@ class CheckInResponse(BaseModel):
 
 
 class NoRoomAvailableResponse(BaseModel):
-    """Returned (HTTP 409) when no rooms of requested type are available — TS-07."""
     detail: str
     requested_type: str
     available_types: list[str]
@@ -96,8 +88,6 @@ class CheckOutResponse(BaseModel):
     bill: BillDetails
     status: str
 
-
-# ── Business logic ────────────────────────────────────────────────────────────
 
 def allocate_room(room_type: RoomType, preferred_floor: Optional[int] = None) -> dict:
     with _allocation_lock:
@@ -150,8 +140,6 @@ def calculate_bill(check_in, check_out, price_per_night, room_svc=0.0, extra=0.0
     )
 
 
-# ── App ───────────────────────────────────────────────────────────────────────
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     seed_rooms()
@@ -165,19 +153,12 @@ app = FastAPI(title="Reception Service", version="2.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
-# ── Guest registration (creates guest + auth account in one call) ─────────────
-
 @app.post("/guests/register", response_model=GuestCredentialsResponse, status_code=201)
 async def register_guest(
     req: GuestRegisterRequest,
     request: Request,
     current: dict = Depends(require_roles("admin", "reception")),
 ):
-    """
-    Reception registers a new guest.
-    Creates the Guest record + User account with auto-generated credentials.
-    Returns credentials to reception so they can hand them to the guest.
-    """
     auth_token = request.headers.get("authorization", "")
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -209,7 +190,6 @@ async def create_guest_legacy(
     data: GuestRegisterRequest,
     current: dict = Depends(require_roles("admin", "reception")),
 ):
-    """Create guest record only (no user account). Legacy endpoint."""
     return db.create_guest(data.model_dump())
 
 
@@ -228,8 +208,6 @@ async def get_guest(guest_id: int, current: dict = Depends(staff_or_admin)):
     return guest
 
 
-# ── Booking endpoints ─────────────────────────────────────────────────────────
-
 @app.get("/bookings")
 async def list_bookings(current: dict = Depends(require_roles("admin", "reception"))):
     return db.get_all_bookings()
@@ -242,8 +220,6 @@ async def my_bookings(current: dict = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="No guest profile linked to this account")
     return db.get_bookings_by_guest(guest_id)
 
-
-# ── Check-in / Check-out ──────────────────────────────────────────────────────
 
 @app.post("/check-in", response_model=CheckInResponse)
 async def check_in(
@@ -331,8 +307,6 @@ async def check_out(
         status="checked_out",
     )
 
-
-# ── Room endpoints ────────────────────────────────────────────────────────────
 
 @app.get("/rooms")
 async def get_rooms(current: dict = Depends(any_authenticated)):

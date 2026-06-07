@@ -1,6 +1,3 @@
-"""
-SQLAlchemy 2.0 ORM models — Mapped[] style.
-"""
 from __future__ import annotations
 
 import json
@@ -17,8 +14,6 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 class Base(DeclarativeBase):
     pass
 
-
-# ── User (Auth) ───────────────────────────────────────────────────────────────
 
 class User(Base):
     __tablename__ = "users"
@@ -48,8 +43,6 @@ class User(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
-
-# ── Room ──────────────────────────────────────────────────────────────────────
 
 class Room(Base):
     __tablename__ = "rooms"
@@ -93,8 +86,6 @@ class Room(Base):
         }
 
 
-# ── Guest ─────────────────────────────────────────────────────────────────────
-
 class Guest(Base):
     __tablename__ = "guests"
 
@@ -120,8 +111,6 @@ class Guest(Base):
             "created_at":  self.created_at.isoformat() if self.created_at else None,
         }
 
-
-# ── Booking ───────────────────────────────────────────────────────────────────
 
 class Booking(Base):
     __tablename__ = "bookings"
@@ -152,8 +141,6 @@ class Booking(Base):
             "created_at":       self.created_at.isoformat() if self.created_at else None,
         }
 
-
-# ── Order ─────────────────────────────────────────────────────────────────────
 
 class Order(Base):
     __tablename__ = "orders"
@@ -192,8 +179,6 @@ class Order(Base):
             "updated_at":       self.updated_at.isoformat() if self.updated_at else None,
         }
 
-
-# ── MaintenanceIssue ──────────────────────────────────────────────────────────
 
 class MaintenanceIssue(Base):
     __tablename__ = "maintenance_issues"

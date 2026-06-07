@@ -1,4 +1,3 @@
-"""Enums for Hotel OS application."""
 from enum import Enum
 
 

@@ -1,8 +1,3 @@
-/**
- * KitchenDisplay — real-time kitchen order board.
- * Fetches all orders from /orders and advances status via /orders/{id}/status.
- * Polls every 15 s for new orders in addition to WebSocket events.
- */
 import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, Clock, RefreshCw } from 'lucide-react';
 import { getOrders, type OrderData } from '../../lib/api';
@@ -130,7 +125,6 @@ export function KitchenDisplay() {
       const data = await getOrders();
       setOrders(data);
     } catch {
-      // orders endpoint might not be accessible for all roles — fail silently
     } finally {
       setLoading(false);
     }

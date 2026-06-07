@@ -1,8 +1,3 @@
-/**
- * AuthContext — JWT token management.
- * Token is kept in localStorage so the session survives page refresh.
- * Provides: user info, login(), logout(), loading state.
- */
 import {
   createContext,
   useContext,
@@ -25,10 +20,9 @@ const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
-  const [loading, setLoading] = useState(true); // true while validating stored token
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // On mount: if a stored token exists, verify it against /auth/me
   useEffect(() => {
     const token = getToken();
     if (!token) {
@@ -37,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     getMe()
       .then(setUser)
-      .catch(() => removeToken()) // token invalid/expired — clear it
+      .catch(() => removeToken())
       .finally(() => setLoading(false));
   }, []);
 
@@ -47,7 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const resp = await apiLogin(username, password);
       setToken(resp.access_token);
-      // Use the user payload returned by the login endpoint
       setUser(resp.user);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -69,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');

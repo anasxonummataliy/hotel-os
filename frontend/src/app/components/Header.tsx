@@ -25,6 +25,16 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<{ id: number; msg: string; time: Date }[]>([]);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setNotifOpen(false);
+      setProfileOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   // Derive initials and display name from real user
   const displayName = user?.full_name ?? 'Mehmonxona xodimi';
   const role = user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1).replace('_', ' ')) : 'Xodim';
@@ -55,7 +65,7 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
           { id: Date.now(), msg: `${label}${detail}`, time: new Date() },
           ...prev,
         ].slice(0, 20));
-      } catch { /* ignore */ }
+      } catch { }
     };
     ws.onerror = () => ws.close();
     return () => ws.close();
@@ -107,7 +117,7 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
         {/* Notifications */}
         <div style={{ position: 'relative' }}>
           <button
-            onClick={() => { setNotifOpen(v => !v); setProfileOpen(false); }}
+            onClick={(e) => { e.stopPropagation(); setNotifOpen(v => !v); setProfileOpen(false); }}
             style={{
               position: 'relative', background: 'none', border: '1px solid #e2e8f0',
               borderRadius: 8, width: 36, height: 36, display: 'flex', alignItems: 'center',
@@ -128,7 +138,9 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
           </button>
 
           {notifOpen && (
-            <div style={{
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
               position: 'absolute', right: 0, top: 44, backgroundColor: '#fff',
               border: '1px solid #e2e8f0', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
               width: 300, maxHeight: 360, zIndex: 50, overflow: 'hidden',
@@ -164,7 +176,7 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
         {/* Profile */}
         <div style={{ position: 'relative' }}>
           <button
-            onClick={() => setProfileOpen(v => !v)}
+            onClick={(e) => { e.stopPropagation(); setProfileOpen(v => !v); setNotifOpen(false); }}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               background: 'none', border: '1px solid #e2e8f0', borderRadius: 8,
@@ -185,7 +197,9 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
           </button>
 
           {profileOpen && (
-            <div style={{
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
               position: 'absolute', right: 0, top: 44, backgroundColor: '#fff',
               border: '1px solid #e2e8f0', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
               minWidth: 180, zIndex: 50, overflow: 'hidden',

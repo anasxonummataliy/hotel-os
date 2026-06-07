@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { TrendingUp, BedDouble, Users, Wrench, DollarSign } from 'lucide-react';
 import { getBookings, getOrders, type BookingData, type OrderData } from '../../lib/api';
+import { formatPrice } from './Settings';
 import type { Room } from './types';
 
 interface AnalyticsProps {
@@ -78,9 +79,9 @@ export function Analytics({ rooms = [] }: AnalyticsProps) {
 
       {/* Revenue KPI Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 24 }}>
-        <KpiCard label="Umumiy daromad" value={`$${totalRevenue.toLocaleString()}`} sub={`${checkedOutBookings.length} ta tugallangan joylashish`} icon={DollarSign} color="#16a34a" bg="#f0fdf4" />
-        <KpiCard label="Xona daromadi" value={`$${totalBookingRevenue.toLocaleString()}`} sub={`Joylashishlar bo'yicha`} icon={DollarSign} color="#2563eb" bg="#eff6ff" />
-        <KpiCard label="Xona xizmati daromadi" value={`$${totalOrderRevenue.toLocaleString()}`} sub={`${orders.length} ta buyurtma`} icon={DollarSign} color="#7c3aed" bg="#f5f3ff" />
+        <KpiCard label="Umumiy daromad" value={formatPrice(totalRevenue)} sub={`${checkedOutBookings.length} ta tugallangan joylashish`} icon={DollarSign} color="#16a34a" bg="#f0fdf4" />
+        <KpiCard label="Xona daromadi" value={formatPrice(totalBookingRevenue)} sub={`Joylashishlar bo'yicha`} icon={DollarSign} color="#2563eb" bg="#eff6ff" />
+        <KpiCard label="Xona xizmati daromadi" value={formatPrice(totalOrderRevenue)} sub={`${orders.length} ta buyurtma`} icon={DollarSign} color="#7c3aed" bg="#f5f3ff" />
         <KpiCard label="Faol joylashishlar" value={activeBookings.length} sub={`Hozirda mehmon joylashgan`} icon={Users} color="#d97706" bg="#fffbeb" />
       </div>
 
@@ -131,7 +132,7 @@ export function Analytics({ rooms = [] }: AnalyticsProps) {
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', marginBottom: 18 }}>
           <div style={{ padding: '14px 18px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h3 style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: 0 }}>💰 Daromad tarixi (tugallangan joylashishlar)</h3>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a' }}>Jami: ${totalBookingRevenue.toLocaleString()}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a' }}>Jami: {formatPrice(totalBookingRevenue)}</span>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
@@ -149,7 +150,7 @@ export function Analytics({ rooms = [] }: AnalyticsProps) {
                   <td style={{ padding: '10px 14px', color: '#64748b' }}>#{b.room_id}</td>
                   <td style={{ padding: '10px 14px', color: '#64748b' }}>{b.check_in_date}</td>
                   <td style={{ padding: '10px 14px', color: '#64748b' }}>{b.check_out_date}</td>
-                  <td style={{ padding: '10px 14px', fontWeight: 700, color: '#16a34a' }}>${b.total_cost.toFixed(2)}</td>
+                  <td style={{ padding: '10px 14px', fontWeight: 700, color: '#16a34a' }}>{formatPrice(b.total_cost)}</td>
                 </tr>
               ))}
             </tbody>
@@ -162,7 +163,7 @@ export function Analytics({ rooms = [] }: AnalyticsProps) {
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', marginBottom: 18 }}>
           <div style={{ padding: '14px 18px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h3 style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: 0 }}>🍽️ Xona xizmati buyurtmalari</h3>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>Jami: ${totalOrderRevenue.toLocaleString()}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>Jami: {formatPrice(totalOrderRevenue)}</span>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
@@ -180,7 +181,7 @@ export function Analytics({ rooms = [] }: AnalyticsProps) {
                   <td style={{ padding: '10px 14px', color: '#64748b', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {o.items.map((item: { name: string; quantity: number }) => `${item.quantity}× ${item.name}`).join(', ')}
                   </td>
-                  <td style={{ padding: '10px 14px', fontWeight: 700, color: '#7c3aed' }}>${o.total_amount.toFixed(2)}</td>
+                  <td style={{ padding: '10px 14px', fontWeight: 700, color: '#7c3aed' }}>{formatPrice(o.total_amount)}</td>
                   <td style={{ padding: '10px 14px' }}>
                     <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20, backgroundColor: '#eff6ff', color: '#2563eb', textTransform: 'capitalize' }}>
                       {o.status.replace(/_/g, ' ')}

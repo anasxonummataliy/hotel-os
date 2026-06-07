@@ -1,15 +1,3 @@
-"""
-PostgreSQL-backed database layer.
-
-Public API is intentionally identical to the old InMemoryDB so every
-service's main.py only needs to change one import line:
-
-    from app.db.database import db          # new
-    # from app.db.memory_db import db       # old
-
-All write operations are wrapped in a session that auto-commits on
-success and auto-rolls-back on error.
-"""
 from __future__ import annotations
 
 import json
@@ -24,21 +12,13 @@ from app.db.models import Booking, Guest, MaintenanceIssue, Order, Room
 from app.schemas.enums import RoomStatus, RoomType
 
 
-# ── Seed data ─────────────────────────────────────────────────────────────────
-# Prices based on real Uzbekistan 4-star hotels (USD/night):
-# Single (Standard): ~$80 (Ramada Tashkent, Hilton Garden Inn)
-# Double: ~$120 (Hyatt Regency Tashkent, Lotte City Hotel)
-# Suite (Luxury): ~$250 (Hilton Tashkent City, Intercontinental)
-# Accessible: ~$95 (adapted standard rooms)
-
+# Prices based on real Uzbekistan 4-star hotels (USD/night)
 _ROOM_SEED = [
-    # Floor 1
     (1,  "101", 1, "single",      80.0),
     (2,  "102", 1, "single",      80.0),
     (3,  "103", 1, "double",     120.0),
     (4,  "104", 1, "double",     120.0),
     (5,  "105", 1, "suite",      250.0),
-    # Floor 2
     (6,  "201", 2, "single",      80.0),
     (7,  "202", 2, "accessible",  95.0),
     (8,  "203", 2, "double",     120.0),
@@ -48,7 +28,6 @@ _ROOM_SEED = [
 
 
 def seed_rooms() -> None:
-    """Insert default rooms if the table is empty."""
     with get_session() as s:
         if s.execute(select(Room)).first() is not None:
             return
@@ -65,13 +44,7 @@ def seed_rooms() -> None:
             ))
 
 
-# ── RoomProxy — mimics the old Room object API ────────────────────────────────
-
 class RoomProxy:
-    """
-    Thin wrapper around a Room ORM row so existing service code that
-    accesses  room.status, room.number, room.room_type, etc. keeps working.
-    """
     __slots__ = (
         "id", "number", "floor", "room_type", "status",
         "price_per_night", "amenities", "last_cleaned", "current_guest_id",
@@ -102,14 +75,7 @@ class RoomProxy:
         }
 
 
-# ── Database class ────────────────────────────────────────────────────────────
-
 class Database:
-    """
-    Thread-safe PostgreSQL database layer (Singleton).
-    Exposes the same method signatures as the old InMemoryDB.
-    """
-
     _instance = None
     _lock = threading.Lock()
 
@@ -118,8 +84,6 @@ class Database:
             if cls._instance is None:
                 cls._instance = super().__new__(cls)
         return cls._instance
-
-    # ── Room ──────────────────────────────────────────────────────────────────
 
     def get_room(self, room_id: int) -> Optional[RoomProxy]:
         with get_session() as s:
@@ -165,8 +129,6 @@ class Database:
             row.last_cleaned = datetime.utcnow()
             return True
 
-    # ── Guest ─────────────────────────────────────────────────────────────────
-
     def create_guest(self, data: dict) -> dict:
         with get_session() as s:
             guest = Guest(
@@ -178,7 +140,7 @@ class Database:
                 created_at=datetime.utcnow(),
             )
             s.add(guest)
-            s.flush()   # get auto-generated id before commit
+            s.flush()
             return guest.to_dict()
 
     def get_guest(self, guest_id: int) -> Optional[dict]:
@@ -190,8 +152,6 @@ class Database:
         with get_session() as s:
             rows = s.execute(select(Guest).order_by(Guest.id)).scalars().all()
             return [r.to_dict() for r in rows]
-
-    # ── Booking ───────────────────────────────────────────────────────────────
 
     def create_booking(self, data: dict) -> dict:
         with get_session() as s:
@@ -235,17 +195,13 @@ class Database:
                 setattr(row, k, v)
             return True
 
-    # ── Order ─────────────────────────────────────────────────────────────────
-
     def create_order(self, data: dict) -> dict:
         with get_session() as s:
-            # status may be an enum or string
             status_val = data["status"]
             if hasattr(status_val, "value"):
                 status_val = status_val.value
 
             items = data.get("items", [])
-            # items may be list of dicts or list of pydantic models
             items_serialisable = []
             for item in items:
                 items_serialisable.append(item if isinstance(item, dict) else item.model_dump())
@@ -281,12 +237,9 @@ class Database:
             if not row:
                 return False
             for k, v in data.items():
-                # normalise enum → string
                 val = v.value if hasattr(v, "value") else v
                 setattr(row, k, val)
             return True
-
-    # ── Maintenance ───────────────────────────────────────────────────────────
 
     def create_maintenance_issue(self, data: dict) -> dict:
         with get_session() as s:
@@ -329,5 +282,4 @@ class Database:
             return True
 
 
-# ── Singleton instance ────────────────────────────────────────────────────────
 db = Database()

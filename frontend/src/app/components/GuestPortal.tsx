@@ -1,8 +1,3 @@
-/**
- * GuestPortal — shown when a guest logs in.
- * Shows: current booking info, room service ordering, maintenance reporting.
- * Brief: Guest receives credentials from reception and logs in to order/report.
- */
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getToken } from '../../lib/api';
@@ -79,7 +74,6 @@ export function GuestPortal() {
         setOrders(res.orders ?? []);
       }
     } catch {
-      // Not checked in
     } finally {
       setLoading(false);
     }
@@ -180,7 +174,6 @@ export function GuestPortal() {
       <div style={{ maxWidth: 640, margin: '24px auto', padding: '0 20px' }}>
         {loading && <p style={{ color: '#94a3b8', textAlign: 'center' }}>Yuklanmoqda…</p>}
 
-        {/* ─── My Stay ─── */}
         {!loading && activeTab === 'stay' && (
           <div>
             {booking ? (
@@ -246,7 +239,6 @@ export function GuestPortal() {
           </div>
         )}
 
-        {/* ─── Room Service ─── */}
         {!loading && activeTab === 'order' && (
           <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Xona xizmati buyurtmasi</h3>
@@ -281,7 +273,6 @@ export function GuestPortal() {
           </div>
         )}
 
-        {/* ─── Report Issue ─── */}
         {!loading && activeTab === 'report' && (
           <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Texnik muammo xabar berish</h3>
