@@ -81,7 +81,7 @@ async def create_order(order: OrderCreate, current: dict = Depends(any_authentic
         "status": OrderStatus.RECEIVED,
         "total_amount": total,
         "special_requests": order.special_requests,
-        "updated_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.now().isoformat(),
     })
     publisher.publish(EVENT_ORDER_STATUS_CHANGED, "room_service", {
         "order_id": created["id"], "room_id": order.room_id,
@@ -139,7 +139,7 @@ async def update_order_status(
         raise HTTPException(status_code=409, detail=f"Unknown current status: '{raw}'")
     if update.status not in VALID_TRANSITIONS.get(current_status, []):
         raise HTTPException(status_code=409, detail=f"Cannot transition '{current_status.value}' → '{update.status.value}'")
-    db.update_order(order_id, {"status": update.status, "updated_at": datetime.utcnow().isoformat()})
+    db.update_order(order_id, {"status": update.status, "updated_at": datetime.now().isoformat()})
     publisher.publish(EVENT_ORDER_STATUS_CHANGED, "room_service", {
         "order_id": order_id, "room_id": order["room_id"],
         "status": update.status.value, "total_amount": order["total_amount"],

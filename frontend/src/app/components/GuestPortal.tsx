@@ -52,9 +52,8 @@ export function GuestPortal() {
   const [loading, setLoading] = useState(true);
 
   // Order form
-  const [itemName, setItemName] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [price, setPrice] = useState(10);
+  // Order form — cart (bir nechta mahsulot)
+  const [cart, setCart] = useState<{ name: string; price: number; quantity: number }[]>([]);
   const [specialReq, setSpecialReq] = useState('');
   const [ordering, setOrdering] = useState(false);
 
@@ -83,19 +82,19 @@ export function GuestPortal() {
 
   const handleOrder = async () => {
     if (!booking) { toast.error('Faol joylashish topilmadi'); return; }
-    if (!itemName.trim()) { toast.error('Mahsulot nomini kiriting'); return; }
+    if (cart.length === 0) { toast.error('Kamida bitta mahsulot tanlang'); return; }
     setOrdering(true);
     try {
       const res = await authFetch(API_RS, {
         method: 'POST',
         body: JSON.stringify({
           room_id: booking.room_id,
-          items: [{ name: itemName, quantity, price }],
+          items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
           special_requests: specialReq || null,
         }),
       });
       toast.success(`Buyurtma #${res.id} qabul qilindi! Xonangizga yetkazamiz.`);
-      setItemName(''); setQuantity(1); setPrice(10); setSpecialReq('');
+      setCart([]); setSpecialReq('');
       loadData();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Buyurtma muvaffaqiyatsiz');
@@ -243,33 +242,95 @@ export function GuestPortal() {
           <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 16px' }}>Xona xizmati buyurtmasi</h3>
             {!booking && <p style={{ color: '#dc2626', fontSize: 13 }}>Buyurtma berish uchun avval ro'yxatdan o'tishingiz kerak.</p>}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Mahsulot nomi</label>
-                <input style={inputStyle} placeholder="masalan, Qahva, Sendvich…" value={itemName} onChange={e => setItemName(e.target.value)} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Miqdor</label>
-                  <input type="number" min={1} style={inputStyle} value={quantity} onChange={e => setQuantity(+e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Narx ($)</label>
-                  <input type="number" min={1} step={0.5} style={inputStyle} value={price} onChange={e => setPrice(+e.target.value)} />
-                </div>
-              </div>
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Maxsus so'rovlar</label>
-                <input style={inputStyle} placeholder="Ixtiyoriy…" value={specialReq} onChange={e => setSpecialReq(e.target.value)} />
-              </div>
-              <button
-                onClick={handleOrder}
-                disabled={ordering || !booking}
-                style={{ padding: '11px', borderRadius: 8, border: 'none', backgroundColor: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: ordering ? 'wait' : 'pointer', opacity: !booking ? 0.5 : 1 }}
-              >
-                {ordering ? 'Buyurtma berilmoqda…' : 'Buyurtma berish'}
-              </button>
+
+            {/* Menyu */}
+            <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Menyudan tanlang (bir nechtasini bosishingiz mumkin):</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+              {[
+                { name: 'Qahva', price: 5 },
+                { name: 'Choy', price: 3 },
+                { name: 'Sendvich', price: 12 },
+                { name: 'Nonushta', price: 15 },
+                { name: 'Tushlik', price: 20 },
+                { name: 'Gazlangan suv', price: 3 },
+                { name: 'Salat', price: 10 },
+                { name: 'Pishloq tarelkasi', price: 18 },
+              ].map(item => {
+                const inCart = cart.find(c => c.name === item.name);
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => {
+                      setCart(prev => {
+                        const existing = prev.find(c => c.name === item.name);
+                        if (existing) {
+                          return prev.map(c => c.name === item.name ? { ...c, quantity: c.quantity + 1 } : c);
+                        }
+                        return [...prev, { name: item.name, price: item.price, quantity: 1 }];
+                      });
+                    }}
+                    style={{
+                      padding: '10px 12px', borderRadius: 8, border: '1px solid',
+                      borderColor: inCart ? '#3b82f6' : '#e2e8f0',
+                      backgroundColor: inCart ? '#eff6ff' : '#f8fafc',
+                      cursor: 'pointer', textAlign: 'left', position: 'relative',
+                    }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', display: 'block' }}>{item.name}</span>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>${item.price}</span>
+                    {inCart && (
+                      <span style={{
+                        position: 'absolute', top: 6, right: 8,
+                        backgroundColor: '#3b82f6', color: '#fff',
+                        borderRadius: '50%', width: 20, height: 20,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 10, fontWeight: 700,
+                      }}>
+                        {inCart.quantity}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
+
+            {/* Savatcha */}
+            {cart.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 12 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', margin: '0 0 8px' }}>Savatcha:</p>
+                  {cart.map((item, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, color: '#1e293b' }}>{item.quantity}× {item.name}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#64748b' }}>${item.price * item.quantity}</span>
+                        <button
+                          onClick={() => setCart(prev => prev.filter(c => c.name !== item.name))}
+                          style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 14, padding: '0 4px' }}
+                        >×</button>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{ borderTop: '1px solid #e2e8f0', marginTop: 8, paddingTop: 8, display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Jami:</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#16a34a' }}>${cart.reduce((s, c) => s + c.price * c.quantity, 0)}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>Maxsus so'rovlar</label>
+                  <input style={inputStyle} placeholder="Ixtiyoriy…" value={specialReq} onChange={e => setSpecialReq(e.target.value)} />
+                </div>
+
+                <button
+                  onClick={handleOrder}
+                  disabled={ordering || !booking}
+                  style={{ padding: '11px', borderRadius: 8, border: 'none', backgroundColor: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: ordering ? 'wait' : 'pointer', opacity: !booking ? 0.5 : 1 }}
+                >
+                  {ordering ? 'Buyurtma berilmoqda…' : `Buyurtma berish ($${cart.reduce((s, c) => s + c.price * c.quantity, 0)})`}
+                </button>
+              </div>
+            )}
           </div>
         )}
 

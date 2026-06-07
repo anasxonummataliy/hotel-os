@@ -165,7 +165,7 @@ async def resolve_issue(
     db.update_maintenance_issue(issue_id, {
         "status": "resolved",
         "resolution_notes": update.resolution_notes or "Resolved",
-        "resolved_at": datetime.utcnow().isoformat(),
+        "resolved_at": datetime.now().isoformat(),
     })
     priority_queue.remove(issue_id)
     publisher.publish(EVENT_MAINTENANCE_UPDATED, "maintenance", {

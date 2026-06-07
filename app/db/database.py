@@ -11,6 +11,10 @@ from app.db.engine import get_session
 from app.db.models import Booking, Guest, MaintenanceIssue, Order, Room
 from app.schemas.enums import RoomStatus, RoomType
 
+def _now():
+    """Local time (Asia/Tashkent)"""
+    return datetime.now()
+
 
 # Prices based on real Uzbekistan 4-star hotels (USD/night)
 _ROOM_SEED = [
@@ -40,7 +44,7 @@ def seed_rooms() -> None:
                 status="clean",
                 price_per_night=price,
                 amenities_json=json.dumps(["WiFi", "TV", "AC"]),
-                last_cleaned=datetime.utcnow(),
+                last_cleaned=datetime.now(),
             ))
 
 
@@ -126,7 +130,7 @@ class Database:
             row = s.get(Room, room_id)
             if not row:
                 return False
-            row.last_cleaned = datetime.utcnow()
+            row.last_cleaned = datetime.now()
             return True
 
     def create_guest(self, data: dict) -> dict:
@@ -137,7 +141,7 @@ class Database:
                 email=data["email"],
                 phone=data.get("phone"),
                 passport_id=data.get("passport_id"),
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(),
             )
             s.add(guest)
             s.flush()
@@ -163,7 +167,7 @@ class Database:
                 status=data.get("status", "checked_in"),
                 special_requests=data.get("special_requests"),
                 total_cost=data.get("total_cost", 0.0),
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(),
             )
             s.add(booking)
             s.flush()
@@ -212,8 +216,8 @@ class Database:
                 status=status_val,
                 total_amount=data.get("total_amount", 0.0),
                 special_requests=data.get("special_requests"),
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             )
             s.add(order)
             s.flush()
@@ -254,7 +258,7 @@ class Database:
                 status=data.get("status", "reported"),
                 reported_by=data.get("reported_by", "unknown"),
                 resolved_at=data.get("resolved_at"),
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(),
             )
             s.add(issue)
             s.flush()

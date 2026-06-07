@@ -247,14 +247,11 @@ export default function App() {
 
     try {
       await checkIn(req);
-      addActivity(`${data.guestName} checked in`, 'checkin');
+      addActivity(`${data.guestName} joylashtirildi`, 'checkin');
+      toast.success(`${data.guestName} muvaffaqiyatli joylashtirildi!`);
       await fetchRooms();
     } catch (err: unknown) {
-      alert(
-        err instanceof Error
-          ? err.message
-          : 'Check-in failed. Check backend.',
-      );
+      toast.error(err instanceof Error ? err.message : 'Joylashtirishda xatolik');
     }
   }, [addActivity, fetchRooms]);
 
