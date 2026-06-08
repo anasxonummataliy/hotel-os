@@ -21,6 +21,7 @@ dependencies = [
     "python-jose[cryptography]>=3.5.0",
     "argon2-cffi>=25.1.0",
     "python-multipart>=0.0.30",
+    "httpx>=0.28.1",
 ]
 
 [project.optional-dependencies]
