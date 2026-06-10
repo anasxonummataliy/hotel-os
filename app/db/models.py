@@ -122,7 +122,7 @@ class Booking(Base):
     check_out_date:   Mapped[str]           = mapped_column(String(20), nullable=False)
     status:           Mapped[str]           = mapped_column(String(30), nullable=False, default="checked_in")
     special_requests: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    total_cost:       Mapped[float]         = mapped_column(Float, nullable=False, default=0.0)
+    total_cost:       Mapped[float]          = mapped_column(Float, nullable=False, default=0.0)
     created_at:       Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=func.now())
 
     guest: Mapped["Guest"] = relationship("Guest", back_populates="bookings", foreign_keys=[guest_id])
@@ -149,7 +149,7 @@ class Order(Base):
     room_id:          Mapped[int]           = mapped_column(Integer, ForeignKey("rooms.id"), nullable=False)
     items_json:       Mapped[str]           = mapped_column(Text, nullable=False, default="[]")
     status:           Mapped[str]           = mapped_column(String(30), nullable=False, default="received")
-    total_amount:     Mapped[float]         = mapped_column(Float, nullable=False, default=0.0)
+    total_amount:     Mapped[float]          = mapped_column(Float, nullable=False, default=0.0)
     special_requests: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at:       Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=func.now())
     updated_at:       Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
