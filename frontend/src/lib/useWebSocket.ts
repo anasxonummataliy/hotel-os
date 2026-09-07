@@ -16,6 +16,18 @@ export function subscribeWS(fn: Listener): () => void {
   return () => { listeners.delete(fn); };
 }
 
+export function getWebSocketUrl(path: string = '/ws/dashboard'): string {
+  if (import.meta.env.VITE_WS_URL) {
+    const base = (import.meta.env.VITE_WS_URL as string).replace(/\/$/, '');
+    return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}${path}`;
+  }
+  return `ws://localhost:8005${path}`;
+}
+
 export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
@@ -24,7 +36,7 @@ export function useWebSocket() {
   const connect = useCallback(() => {
     if (wsRef.current && wsRef.current.readyState < 2) return;
 
-    const ws = new WebSocket('ws://localhost:8005/ws/dashboard');
+    const ws = new WebSocket(getWebSocketUrl('/ws/dashboard'));
     wsRef.current = ws;
 
     ws.onopen = () => {

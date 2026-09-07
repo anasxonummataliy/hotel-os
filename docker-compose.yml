@@ -69,17 +69,7 @@ services:
       "
     restart: unless-stopped
 
-  # ── Frontend ────────────────────────────────────────────────
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: hotel-os-frontend
-    ports:
-      - "8012:8012"
-    depends_on:
-      - backend
-    restart: unless-stopped
 
 volumes:
   postgres_data:
+

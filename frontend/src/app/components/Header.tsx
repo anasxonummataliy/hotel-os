@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Bell, ChevronDown, User, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { getWebSocketUrl } from '../../lib/useWebSocket';
 
 interface HeaderProps {
   currentView: string;
@@ -47,7 +48,7 @@ export function Header({ currentView, onLogout, onNavigate }: HeaderProps) {
 
   // Listen to WebSocket events for notifications
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8005/ws/dashboard');
+    const ws = new WebSocket(getWebSocketUrl('/ws/dashboard'));
     ws.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);

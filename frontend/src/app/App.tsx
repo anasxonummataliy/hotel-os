@@ -14,6 +14,7 @@ import { LoginPage } from './components/LoginPage';
 import { GuestPortal } from './components/GuestPortal';
 import { useAuth } from '../contexts/AuthContext';
 import { getRooms, checkIn, checkOut, getBookings, getGuests, type RoomData, type CheckInRequest } from '../lib/api';
+import { getWebSocketUrl } from '../lib/useWebSocket';
 import { toast } from '../lib/toast';
 import type { ActiveView, Room, ActivityEvent } from './components/types';
 import { initialActivity } from './components/mockData';
@@ -123,7 +124,7 @@ export default function App() {
     let reconnectTimer: ReturnType<typeof setTimeout>;
 
     function connect() {
-      const ws = new WebSocket('ws://localhost:8005/ws/dashboard');
+      const ws = new WebSocket(getWebSocketUrl('/ws/dashboard'));
       wsRef.current = ws;
 
       ws.onopen = () => {

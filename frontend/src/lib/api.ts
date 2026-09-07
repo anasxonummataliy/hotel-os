@@ -12,6 +12,13 @@ export function removeToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
+export function getApiUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -23,7 +30,7 @@ async function request<T>(
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(path, { ...options, headers });
+  const res = await fetch(getApiUrl(path), { ...options, headers });
 
   if (!res.ok) {
     let detail = `HTTP ${res.status}`;
@@ -64,7 +71,7 @@ export interface UserInfo {
 
 export async function login(username: string, password: string): Promise<LoginResponse> {
   const body = new URLSearchParams({ username, password });
-  const res = await fetch('/auth/login', {
+  const res = await fetch(getApiUrl('/auth/login'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),
