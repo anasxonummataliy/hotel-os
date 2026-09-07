@@ -22,8 +22,7 @@ export function getWebSocketUrl(path: string = '/ws/dashboard'): string {
     return `${base}${path.startsWith('/') ? path : `/${path}`}`;
   }
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${protocol}//${window.location.host}${path}`;
+    return `wss://api-hotel-os.anasxonummataliy.dev${path}`;
   }
   return `ws://localhost:8005${path}`;
 }

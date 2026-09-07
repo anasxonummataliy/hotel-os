@@ -12,7 +12,11 @@ export function removeToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const DEFAULT_API_BASE = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+  ? 'https://api-hotel-os.anasxonummataliy.dev'
+  : '';
+
+const API_BASE = (import.meta.env.VITE_API_URL || DEFAULT_API_BASE).replace(/\/$/, '');
 
 export function getApiUrl(path: string): string {
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
